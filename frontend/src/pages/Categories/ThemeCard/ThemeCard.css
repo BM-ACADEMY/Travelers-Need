@@ -1,0 +1,25 @@
+.theme-card-image {
+    height: 200px;
+    object-fit: cover;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .theme-card:hover .theme-card-image {
+    transform: scale(1.1);
+  }
+  
+  .theme-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+  }
+  
+  .theme-card:hover .theme-card-overlay {
+    opacity: 1;
+  }
+  

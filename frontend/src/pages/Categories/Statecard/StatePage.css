@@ -1,0 +1,42 @@
+.state-header {
+    position: relative;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7);
+  }
+  
+  .state-header .overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .state-name {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
+  
+  .starting-price {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  
+  .state-description {
+    font-size: 1.2rem;
+    color: #555;
+    line-height: 1.6;
+    text-align: justify;
+  }
+  
+  .package-card img {
+    transition: transform 0.3s ease;
+  }
+  
+  .package-card:hover img {
+    transform: scale(1.1);
+  }
+  

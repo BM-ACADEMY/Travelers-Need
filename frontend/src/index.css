@@ -1,0 +1,118 @@
+.mega-dropdown {
+    position: absolute !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    top: 60px; /* Adjust based on your navbar height */
+    z-index: 9999; /* Ensure it's on top of other elements */
+  }
+  
+  /* Optional: If you want the dropdown to show on hover instead of click on large screens */
+  @media (min-width: 992px) {
+    .nav-item.dropdown:hover .mega-dropdown {
+      display: block;
+    }
+  }
+  .navbar-toggler-icon {
+    filter: invert(1);
+  }
+  
+/* Hover underline effect */
+.hover-underline {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.hover-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 2px;
+  background-color: #ef156c; /* Pink underline */
+  transition: width 0.3s ease-out;
+}
+
+.hover-underline:hover::after {
+  width: 100%;
+}
+
+  
+
+  .app-container {
+    /* height: 100vh; */
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .hero-section {
+    background-color: #f9f9f9;
+    color: black;
+    /* min-height: 100vh; */
+    display: flex;
+    /* align-items: center; */
+    /* justify-content: center; */
+    position: relative;
+    padding: 20px;
+  }
+  
+  .text-content {
+    /* max-width: 600px; */
+    z-index: 2;
+  }
+  
+  .search-bar .form-select {
+    min-width: 180px;
+    max-width: 250px;
+  }
+  
+  .search-bar .btn-danger {
+    font-weight: bold;
+    padding: 10px 20px;
+  }
+  
+  .side-image {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    max-width: 300px;
+  }
+  
+  .left-image {
+    left: 0;
+  }
+  
+  .right-image {
+    right: 0;
+  }
+  
+  
+  .scrollable-main {
+    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+    max-height: calc(100vh -20px - 10px); 
+    padding: 1rem; /* Optional padding for better content spacing */
+  }
+  
+  body {
+    overflow-x: hidden; 
+    background-color: white;
+    font-family: Verdana, Geneva, Tahoma, sans-serif !important;
+  }
+
+  .signup-container {
+    width: 100vw;
+    height: 100vh;
+    background: url('https://source.unsplash.com/random/1920x1080/?business,technology') no-repeat center center;
+    background-size: cover;
+  }
+  
+  .form-card {
+    backdrop-filter: blur(10px); /* Blur effect for transparency */
+  }
+  
+  .navbar-nav .dropdown-toggle::after {
+    display: none;
+  }

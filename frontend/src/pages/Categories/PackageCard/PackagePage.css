@@ -1,0 +1,151 @@
+.card {
+    border-radius: 0.75rem;
+  }
+  
+  .card img {
+    border-radius: 0.75rem 0 0 0.75rem;
+  }
+  
+  .card-header {
+    font-size: 1.25rem;
+  }
+  
+  .list-group-item {
+    border: none;
+    padding: 0.75rem 1rem;
+  }
+  
+  .review-card {
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    background-color: #f9f9f9;
+  }
+  
+  .review-card h6 {
+    margin-bottom: 0.5rem;
+  }
+  
+  .review-card small {
+    font-size: 0.85rem;
+  }
+
+
+  .upi-payment-section {
+    background: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+  }
+  
+  .qr-code-container img {
+    transition: transform 0.3s ease;
+  }
+  
+  .qr-code-container img:hover {
+    transform: scale(1.05);
+  }
+  
+  .payment-success-card {
+    background: #e9fce9;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #7ed87e;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .payment-success-card .success-animation img {
+    animation: bounce 1s infinite;
+  }
+  
+  @keyframes bounce {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.1);
+    }
+  }
+  
+  
+  .swiper-container {
+    position: relative;
+    width: 100%;
+    height: auto; /* Adjust height dynamically */
+  }
+  
+  .mySwiper2 {
+    height: 400px; /* Set max height for main Swiper */
+    width: 100%;
+  }
+  
+  .mySwiper {
+    height: 80px; /* Adjust height for thumbnails */
+    margin-top: 10px;
+  }
+  
+  .mySwiper .swiper-slide {
+    width: 20%; /* Smaller thumbnails */
+    height: 100%;
+    opacity: 0.4;
+  }
+  
+  .mySwiper .swiper-slide-thumb-active {
+    opacity: 1;
+  }
+  
+  .custom-navigation-button {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    transform: translateY(-50%);
+    z-index: 10;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-navigation-button:hover {
+    background-color: #282941;
+    color: #fff;
+  }
+  
+  .custom-navigation-button-prev {
+    left: -20px; /* Positioned left of the Swiper */
+  }
+  
+  .custom-navigation-button-next {
+    right: -20px; /* Positioned right of the Swiper */
+  }
+  
+  .swiper-slide img {
+    display: block;
+    width: 100%;
+    height: auto; /* Adjust height dynamically */
+    object-fit: cover;
+  }
+  
+  
+
+
+  .review-card:hover {
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+    transform: translateY(-3px);
+    transition: all 0.3s ease;
+  }
+  
+  .review-card .hover-overlay:hover {
+    opacity: 1;
+  }
+  
+  .review-card .hover-shadow:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
