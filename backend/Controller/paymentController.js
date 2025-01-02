@@ -1,65 +1,92 @@
-const Payment = require('../Models/paymentModel'); // Import the Payment model
+const Payment = require("../Models/paymentModel");
 
-// Controller to handle creating a new payment
-const createPayment = async (req, res) => {
+// 1. Create a new payment
+exports.createPayment = async (req, res) => {
   try {
-    const { bookingId, userId, price, upiTransactionId } = req.body;
-
-    // Validate request data
-    if (!bookingId || !userId || !price || !upiTransactionId) {
-      return res.status(400).json({ message: 'All fields are required' });
-    }
+    const { bookingId, userId, price, upiTransactionId, paymentMethod,status } = req.body;
 
     // Create a new payment
-    const payment = new Payment({
+    const newPayment = new Payment({
       bookingId,
       userId,
       price,
       upiTransactionId,
+      status,
+      paymentMethod,
+      
     });
 
-    // Save the payment to the database
-    const savedPayment = await payment.save();
-
-    res.status(201).json({
-      message: 'Payment created successfully',
-      payment: savedPayment,
-    });
+    await newPayment.save();
+    res.status(201).json({ message: "Payment created successfully", payment: newPayment });
   } catch (error) {
-    if (error.code === 11000) {
-      // Handle duplicate UPI Transaction ID error
-      return res.status(400).json({
-        message: 'UPI Transaction ID must be unique',
-      });
-    }
-    res.status(500).json({
-      message: 'An error occurred while creating the payment',
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Controller to handle fetching all payments
-const getAllPayments = async (req, res) => {
+// 2. Get all payments
+exports.getAllPayments = async (req, res) => {
   try {
-    // Fetch all payments, including referenced data
     const payments = await Payment.find()
-      .populate('bookingId') // Populate Booking reference
-      .populate('userId'); // Populate User reference
-
-    res.status(200).json({
-      message: 'Payments retrieved successfully',
-      payments,
-    });
+      .populate("bookingId", "orderId price")
+      .populate("userId", "name email");
+    res.json({ message: "All payments retrieved", payments });
   } catch (error) {
-    res.status(500).json({
-      message: 'An error occurred while retrieving payments',
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-module.exports = {
-  createPayment,
-  getAllPayments,
+// 3. Get a payment by ID
+exports.getPaymentById = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const payment = await Payment.findById(paymentId)
+      .populate("bookingId", "orderId price")
+      .populate("userId", "name email");
+
+    if (!payment) {
+      return res.status(404).json({ message: "Payment not found" });
+    }
+
+    res.json({ message: "Payment retrieved successfully", payment });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 4. Update payment status by ID
+exports.updatePaymentStatus = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const { status } = req.body;
+
+    const updatedPayment = await Payment.findByIdAndUpdate(
+      paymentId,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedPayment) {
+      return res.status(404).json({ message: "Payment not found" });
+    }
+
+    res.json({ message: "Payment status updated successfully", payment: updatedPayment });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 5. Delete a payment by ID
+exports.deletePayment = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const deletedPayment = await Payment.findByIdAndDelete(paymentId);
+
+    if (!deletedPayment) {
+      return res.status(404).json({ message: "Payment not found" });
+    }
+
+    res.json({ message: "Payment deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

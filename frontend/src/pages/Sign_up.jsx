@@ -290,12 +290,12 @@ const Sign_up = ({ open, onClose, onSignInClick }) => {
               <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>
                 Welcome to Sign Up
               </h1>
-              <p style={{ fontSize: "1rem" }}>
+              <p style={{ fontSize: "1rem",color:'white' }}>
                 Already have an account?{" "}
                 <span
                   onClick={onSignInClick}
                   style={{
-                    color: "yellow",
+                    color: "white",
                     textDecoration: "underline",
                     fontWeight: "bold",
                     cursor: "pointer",

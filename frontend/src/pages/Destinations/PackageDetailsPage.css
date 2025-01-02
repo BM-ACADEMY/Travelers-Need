@@ -1,0 +1,181 @@
+.container {
+    animation: fadeIn 1s ease-in-out;
+    /* font-family: "Poppins", sans-serif; */
+  }
+  
+  h5 {
+    font-family: "Roboto Slab", serif;
+    color: rgba(40,41,65,1);
+    font-weight: bold;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #ef156c;
+    padding-bottom: 5px;
+  }
+  
+  p {
+    color: rgba(40,41,65,1);
+    line-height: 1.8;
+  }
+  
+  strong {
+    color: #ef156c;
+  }
+  
+  button {
+    /* font-family: "Poppins", sans-serif; */
+    color: #ef156c;
+    border: none;
+    background: none;
+    cursor: pointer;
+  }
+  
+  button:hover {
+    text-decoration: underline;
+    color: rgba(40,41,65,1);
+  }
+  
+  .icon {
+    margin-right: 8px;
+    color: #ef156c;
+    font-size: 1.2em;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+
+  .list-group {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .option-button {
+    /* font-family: "Poppins", sans-serif; */
+    font-weight: 600;
+    font-size: 16px;
+    color: rgba(40,41,65,1);
+    background-color: #ffffff;
+    border: none;
+    padding: 12px 20px;
+    transition: all 0.3s ease-in-out;
+    position: relative;
+  }
+  
+  .option-button:hover {
+    color: #ffffff;
+    background-color: #ef156c;
+    box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.2);
+    transform: translateX(5px);
+  }
+  
+  .option-button.active {
+    background-color: #ef156c;
+    color: #ffffff;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .option-button::before {
+    content: "";
+    position: absolute;
+    height: 2px;
+    width: 0%;
+    bottom: 0;
+    left: 0;
+    background-color: #ffffff;
+    transition: width 0.3s ease-in-out;
+  }
+  
+  .option-button:hover::before {
+    width: 100%;
+  }
+  
+  .list-group-item {
+    cursor: pointer;
+  }
+  
+  .icon {
+    margin-right: 8px;
+    color: #3498db;
+    font-size: 1.2rem;
+  }
+  
+  h6 {
+    /* font-family: "Poppins", sans-serif; */
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #2c3e50;
+  }
+  
+
+  .best-time-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    /* font-family: "Poppins", sans-serif; */
+    color: #34495e;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .section-title {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #3498db;
+    display: inline-block;
+  }
+  
+  .temperature-info p {
+    font-size: 1rem;
+    margin: 5px 0;
+    color: #2c3e50;
+  }
+  
+  .season-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  
+  .season-card {
+    display: flex;
+    background-color: #ffffff;
+    flex-direction: column;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    /* flex: 1 1 calc(33.333% - 20px); */
+    /* text-align: center; */
+  }
+  
+  .season-card h6 {
+    font-size: 1.2rem;
+    color: #ef156c;
+    margin-bottom: 10px;
+  }
+  
+  .weather-info {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+  }
+  
+  .weather-info p {
+    font-size: 1rem;
+    margin: 5px 0;
+    color: #2c3e50;
+  }
+  

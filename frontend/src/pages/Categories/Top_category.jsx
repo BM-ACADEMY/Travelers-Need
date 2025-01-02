@@ -1,56 +1,51 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import StateCard from './Statecard/StateCard';
 
-const Top_category = ({topDestinationsData}) => {
-    if (!topDestinationsData || Object.keys(topDestinationsData).length === 0) {
-        return <div className="text-center">No Top Destinations Available</div>;
-      }
-    
-      return (
-        <div className="container mt-5">
-          <h2 className="text-center mb-4">TOP DESTINATIONS</h2>
-          <div className="row">
-            {Object.keys(topDestinationsData).map((state, index) => {
-              const stateDetails = topDestinationsData[state]?.stateDetails || {};
-              const cityDetails = topDestinationsData[state]?.cities || {};
-    
-              // Extract stateName and fileName from the stateImage path
-              const stateImagePath = stateDetails.stateImage || "";
-              const parts = stateImagePath.split("\\"); // Split path by backslashes
-              
-              let stateName = state; // Default to the state key
-              let fileName = "";
-    
-              // Validate and extract stateName and fileName from the path
-              if (parts.length >= 3) {
-                stateName = parts[2]; // Extract "pondicherry" from the path
-                fileName = parts.pop(); // Extract the file name
-              } else {
-                console.warn("Unexpected stateImage format:", stateImagePath);
-              }
-    
-              // Construct the stateImage URL dynamically
-              const stateImageURL = `http://localhost:3000/api/address/image?stateName=${encodeURIComponent(
-                stateName
-              )}&fileName=${encodeURIComponent(fileName)}`;
-    
-              const firstCity = Object.keys(cityDetails)[0];
-              const firstPackage = cityDetails[firstCity]?.[0]?.name || "No Packages";
-    
-              return (
-                <div key={index} className="col-md-4 mb-4">
-                  <StateCard
-                    stateName={stateDetails.stateName || state}
-                    stateImage={stateImageURL} // Use dynamically constructed URL
-                    startingPrice={stateDetails.startingPrice}
-                    cityCount={Object.keys(cityDetails).length}
-                    packageName={firstPackage}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>)
-}
+const Top_category = ({ topDestinationsData }) => {
+  if (!topDestinationsData || !Array.isArray(topDestinationsData)|| topDestinationsData.length === 0) {
+    return <div className="text-center">No Top Destinations Available</div>;
+  }
+
+  useEffect(() => {
+    console.log("Top Destinations Data:", topDestinationsData);
+  }, [topDestinationsData]);
+
+  return (
+    <div className="container mt-5">
+      <h4 className=" mb-4" style={{color :'rgba(40,41,65,1)'}}>TOP DESTINATIONS</h4>
+      <div className="row">
+        {topDestinationsData.map((destination, index) => {
+          const {
+            state,
+            startingPrice,
+            image,
+            tourPlans = [],
+          } = destination;
+
+          const imageName = image ? image.split('\\').pop() : 'default.jpg';
+          const stateName = state || 'Unknown State';
+          const firstTourPlan = tourPlans[0]?.title || 'No Packages Available';
+          const tourPlanCount = tourPlans.length || 0;
+
+          const stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+            stateName
+          )}&fileName=${encodeURIComponent(imageName)}`;
+
+          return (
+            <div key={index} className="col-md-4 col-lg-3 mb-4">
+              <StateCard
+                stateName={stateName}
+                stateImage={stateImageURL}
+                startingPrice={startingPrice}
+                cityCount={tourPlanCount}
+                packageName={firstTourPlan}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
 
 export default Top_category;

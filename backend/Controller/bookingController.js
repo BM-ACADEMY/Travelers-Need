@@ -1,93 +1,123 @@
-const Booking = require('../Models/bookingModel'); // Import Booking model
+const Booking = require("../Models/bookingModel");
 
-// **POST**: Create a new booking
-const createBooking = async (req, res) => {
+// 1. Create a new booking
+exports.createBooking = async (req, res) => {
   try {
-    const bookingData = req.body;
+    const {
+      userId,
+      packageId,
+      price,
+      adultCount,
+      childCount,
+      date,
+      username,
+      email,
+      phoneNumber,
+      status,
+      address, // Include the address field
+    } = req.body;
 
-    // Create and save the booking
-    const newBooking = new Booking(bookingData);
+    // Create a new booking document
+    const newBooking = new Booking({
+      userId,
+      packageId,
+      price,
+      adultCount,
+      childCount,
+      date,
+      username,
+      email,
+      phoneNumber,
+      status,
+      address,
+    });
+
     await newBooking.save();
 
-    res.status(201).json({ message: 'Booking created successfully', booking: newBooking });
+    res.status(201).json({
+      message: "Booking created successfully",
+      booking: {
+        bookingId: newBooking._id,
+        orderId: newBooking.orderId, // Include orderId in the response
+        userId: newBooking.userId,
+        packageId: newBooking.packageId,
+        price: newBooking.price,
+        adultCount: newBooking.adultCount,
+        childCount: newBooking.childCount,
+        date: newBooking.date,
+        username: newBooking.username,
+        email: newBooking.email,
+        phoneNumber: newBooking.phoneNumber,
+        address: newBooking.address,
+        status: newBooking.status,
+      },
+    });
   } catch (error) {
-    res.status(400).json({ error: 'Error creating booking: ' + error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **GET**: Retrieve all bookings
-const getAllBookings = async (req, res) => {
+
+// 2. Get all bookings
+exports.getAllBookings = async (req, res) => {
   try {
     const bookings = await Booking.find()
-      .populate('userId', 'name email') // Populate user details (select specific fields)
-      .populate('packageId', 'name description'); // Populate package details (select specific fields)
-    res.status(200).json(bookings);
+      .populate("userId", "name email") // Populate user details
+      .populate("packageId", "title price duration"); // Populate package details
+    res.json({ message: "All bookings retrieved", bookings });
   } catch (error) {
-    res.status(500).json({ error: 'Error retrieving bookings: ' + error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **GET**: Retrieve a booking by ID
-const getBookingById = async (req, res) => {
+// 3. Get a single booking by ID
+exports.getBookingById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const booking = await Booking.findById(id)
-      .populate('userId', 'name email') // Populate user details
-      .populate('packageId', 'name description'); // Populate package details
+    const { bookingId } = req.params;
+    const booking = await Booking.findById(bookingId)
+      .populate("userId", "name email")
+      .populate("packageId", "title price duration");
 
     if (!booking) {
-      return res.status(404).json({ error: 'Booking not found' });
+      return res.status(404).json({ message: "Booking not found" });
     }
 
-    res.status(200).json(booking);
+    res.json({ message: "Booking retrieved successfully", booking });
   } catch (error) {
-    res.status(500).json({ error: 'Error retrieving booking: ' + error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **PUT**: Update a booking by ID
-const updateBooking = async (req, res) => {
+// 4. Update a booking by ID
+exports.updateBooking = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { bookingId } = req.params;
     const updatedData = req.body;
 
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      id,
-      updatedData,
-      { new: true, runValidators: true } // Return the updated document and validate
-    );
+    const updatedBooking = await Booking.findByIdAndUpdate(bookingId, updatedData, { new: true });
 
     if (!updatedBooking) {
-      return res.status(404).json({ error: 'Booking not found' });
+      return res.status(404).json({ message: "Booking not found" });
     }
 
-    res.status(200).json({ message: 'Booking updated successfully', booking: updatedBooking });
+    res.json({ message: "Booking updated successfully", booking: updatedBooking });
   } catch (error) {
-    res.status(400).json({ error: 'Error updating booking: ' + error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **DELETE**: Delete a booking by ID
-const deleteBooking = async (req, res) => {
+// 5. Delete a booking by ID
+exports.deleteBooking = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const deletedBooking = await Booking.findByIdAndDelete(id);
+    const { bookingId } = req.params;
+    const deletedBooking = await Booking.findByIdAndDelete(bookingId);
 
     if (!deletedBooking) {
-      return res.status(404).json({ error: 'Booking not found' });
+      return res.status(404).json({ message: "Booking not found" });
     }
 
-    res.status(200).json({ message: 'Booking deleted successfully', booking: deletedBooking });
+    res.json({ message: "Booking deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Error deleting booking: ' + error.message });
+    res.status(500).json({ error: error.message });
   }
-};
-
-module.exports = {
-  createBooking,
-  getAllBookings,
-  getBookingById,
-  updateBooking,
-  deleteBooking,
 };

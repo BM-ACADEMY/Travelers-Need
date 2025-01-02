@@ -1,224 +1,188 @@
 const Address = require("../Models/addressModel");
-const multer = require("multer");
+const fs = require("fs-extra");
 const path = require("path");
-const fs = require("fs");
 
-// Set up multer for dynamic state image uploads
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const stateName = req.body.state
-      ? req.body.state.toLowerCase().replace(/ /g, "_")
-      : "default";
-    const uploadPath = path.join("uploads", "states", stateName);
-    fs.mkdirSync(uploadPath, { recursive: true }); // Ensure directory exists
-    cb(null, uploadPath);
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
+const UPLOADS_ROOT = path.join(__dirname, "..", "uploads", "addresses");
 
-// Get all addresses
-const getAllAddresses = async (req, res) => {
-  try {
-    const addresses = await Address.find();
-    res.status(200).json(addresses);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch addresses", error });
-  }
-};
-const getAllAddressesWithCategories = async (req, res) => {
-  try {
-    const addresses = await Address.aggregate([
-      {
-        $lookup: {
-          from: "packages", // The collection name of the Package model
-          localField: "_id", // The field in the Address collection
-          foreignField: "addressId", // The field in the Package collection
-          as: "packages", // The name of the array field in the result
-        },
-      },
-      {
-        $match: {
-          packages: { $ne: [] }, // Only include addresses that have at least one package
-        },
-      },
-      {
-        $group: {
-          _id: "$type", // Group by the `type` field (domestic or international)
-          addresses: {
-            $push: {
-              _id: "$_id",
-              country: "$country",
-              state: "$state",
-              city: "$city",
-              description: "$description",
-              stateImage: "$stateImage",
-              startingPrice: "$startingPrice",
-              packages: {
-                $map: {
-                  input: "$packages",
-                  as: "package",
-                  in: {
-                    _id: "$$package._id",
-                    name: "$$package.name",
-                    price: "$$package.price",
-                    duration: "$$package.duration",
-                    inclusions: "$$package.inclusions",
-                    images: "$$package.images",
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-      {
-        $project: {
-          _id: 0, // Remove the `_id` field from the group result
-          category: "$_id", // Rename `_id` to `category`
-          addresses: 1,
-        },
-      },
-    ]);
-
-    res.status(200).json({
-      message: "Addresses with valid packages categorized successfully",
-      data: addresses,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch addresses", error });
-  }
+// Helper function: Create a dynamic folder structure for state
+const createDynamicFolder = async (state) => {
+  const stateFolder = path.join(UPLOADS_ROOT, state.replace(/ /g, "_"));
+  await fs.ensureDir(stateFolder);
+  return stateFolder;
 };
 
-
-// Get address by filters (country, state, city)
-const getAddressByFilters = async (req, res) => {
-  const { country, state, city } = req.query;
-
+// 1. Create a new address with dynamic image upload
+exports.createAddress = async (req, res) => {
   try {
-    const query = {};
-    if (country) query.country = country;
-    if (state) query.state = state;
-    if (city) query.city = city;
+    const { country, state, city, description, startingPrice, coordinates } = req.body;
 
-    const addresses = await Address.find(query);
-    res.status(200).json(addresses);
-  } catch (error) {
-    res.status(500).json({ message: "Failed to fetch addresses", error });
-  }
-};
+    // Validate coordinates
+    let parsedCoordinates;
+    try {
+      parsedCoordinates = typeof coordinates === "string" ? JSON.parse(coordinates) : coordinates;
+      if (!Array.isArray(parsedCoordinates) || parsedCoordinates.length !== 2) {
+        throw new Error("Coordinates must be an array of two numbers [latitude, longitude].");
+      }
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid coordinates format." });
+    }
 
-// Create a new address with image upload
-const createAddress = async (req, res) => {
-  const { country, state, city, description, type, startingPrice } = req.body;
-  const stateImage = req.file ? req.file.path : null;
+    // Create state folder dynamically
+    const stateFolder = await createDynamicFolder(state);
 
-  // Validate required fields
-  if (!country || !state || !city || !description || !type || startingPrice === undefined) {
-    return res.status(400).json({ message: "All fields are required, including startingPrice" });
-  }
+    // Rename and move uploaded files
+    const images = [];
+    if (req.files) {
+      for (const file of req.files) {
+        const timestamp = Date.now();
+        const newFileName = `${file.fieldname}-${timestamp}${path.extname(file.originalname)}`;
+        const destinationPath = path.join(stateFolder, newFileName);
+        await fs.move(file.path, destinationPath);
+        images.push(path.relative(UPLOADS_ROOT, destinationPath));
+      }
+    }
 
-  // Validate that startingPrice is a non-negative number
-  if (isNaN(startingPrice) || startingPrice < 0) {
-    return res.status(400).json({ message: "Starting price must be a non-negative number" });
-  }
-
-  try {
-    // Create a new Address document
+    // Create a new address document
     const newAddress = new Address({
       country,
       state,
       city,
       description,
-      type,
-      stateImage,
-      startingPrice: Number(startingPrice), // Convert startingPrice to a number
+      images,
+      startingPrice,
+      coordinates: parsedCoordinates,
     });
 
-    // Save to the database
     await newAddress.save();
-
-    res.status(201).json({
-      message: "Address created successfully",
-      address: newAddress,
-    });
+    res.status(201).json({ message: "Address created successfully", address: newAddress });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to create address",
-      error: error.message,
-    });
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// 2. Get all addresses
+exports.getAllAddresses = async (req, res) => {
+  try {
+    const addresses = await Address.find();
+    console.log(`Fetched addresses:`, addresses);
+
+    const transformedAddresses = addresses.map(address => {
+      if (address.city && address.coordinates && address.startingPrice) {
+        return {
+          cityName: address.city,
+          coordinates: address.coordinates.map(coord => parseFloat(coord)),
+          startingPrice: address.startingPrice
+        };
+      } else {
+        console.log("Skipping record due to missing fields:", address);
+        return null;
+      }
+    }).filter(record => record !== null);
+
+    res.json({ message: "All addresses retrieved successfully", addresses: transformedAddresses });
+  } catch (error) {
+    console.error("Error fetching addresses:", error);
+    res.status(500).json({ error: error.message });
   }
 };
 
 
-
-// Update an existing address by ID with image upload
-const updateAddress = async (req, res) => {
-  const { id } = req.params;
-  const stateImage = req.file ? req.file.path : null;
-
+// 3. Get addresses by filters
+exports.getAddressByFilters = async (req, res) => {
   try {
-    const updateData = { ...req.body };
-    if (stateImage) updateData.stateImage = stateImage;
+    const filters = req.query; // Use query parameters for filtering
+    const addresses = await Address.find(filters);
+    res.json({ message: "Filtered addresses retrieved successfully", addresses });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
-    const updatedAddress = await Address.findByIdAndUpdate(id, updateData, {
-      new: true, // Return the updated document
-      runValidators: true, // Run schema validations
-    });
+// 4. Get all addresses with packages (custom logic)
+exports.getAllAddressesWithCategories = async (req, res) => {
+  try {
+    const addresses = await Address.aggregate([
+      {
+        $lookup: {
+          from: "packages", // Assuming "packages" is another collection
+          localField: "_id",
+          foreignField: "addressId",
+          as: "packages",
+        },
+      },
+    ]);
+    res.json({ message: "Addresses with categories retrieved successfully", addresses });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
+// 5. Update an address by ID
+exports.updateAddress = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+
+    // Handle file uploads if provided
+    if (req.files) {
+      const stateFolder = await createDynamicFolder(req.body.state || "default");
+      const images = [];
+      for (const file of req.files) {
+        const timestamp = Date.now();
+        const newFileName = `${file.fieldname}-${timestamp}${path.extname(file.originalname)}`;
+        const destinationPath = path.join(stateFolder, newFileName);
+        await fs.move(file.path, destinationPath);
+        images.push(path.relative(UPLOADS_ROOT, destinationPath));
+      }
+      updatedData.images = images;
+    }
+
+    const updatedAddress = await Address.findByIdAndUpdate(id, updatedData, { new: true });
     if (!updatedAddress) {
-      return res.status(404).json({ message: "Address not found" });
+      return res.status(404).json({ message: "Address not found." });
     }
 
-    res.status(200).json({ message: "Address updated successfully", address: updatedAddress });
+    res.json({ message: "Address updated successfully", address: updatedAddress });
   } catch (error) {
-    res.status(500).json({ message: "Failed to update address", error });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Delete an address by ID
-const deleteAddress = async (req, res) => {
-  const { id } = req.params;
-
+// 6. Delete an address by ID
+exports.deleteAddress = async (req, res) => {
   try {
-    const deletedAddress = await Address.findByIdAndDelete(id);
+    const { id } = req.params;
+    const address = await Address.findByIdAndDelete(id);
 
-    if (!deletedAddress) {
-      return res.status(404).json({ message: "Address not found" });
+    if (!address) {
+      return res.status(404).json({ message: "Address not found." });
     }
 
-    // Delete the associated image file if it exists
-    if (deletedAddress.stateImage && fs.existsSync(deletedAddress.stateImage)) {
-      fs.unlinkSync(deletedAddress.stateImage);
+    // Delete state folder if no other records exist for this state
+    const stateFolder = path.join(UPLOADS_ROOT, address.state.replace(/ /g, "_"));
+    const stateRecords = await Address.find({ state: address.state });
+    if (stateRecords.length === 0) {
+      await fs.remove(stateFolder);
     }
 
-    res.status(200).json({ message: "Address deleted successfully" });
+    res.json({ message: "Address deleted successfully." });
   } catch (error) {
-    res.status(500).json({ message: "Failed to delete address", error });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// Serve the image file dynamically based on state and file name
-const getImage = (req, res) => {
-  const { stateName, fileName } = req.query;
-  const filePath = path.join("uploads", "states", stateName.toLowerCase(), fileName);
+// 7. Serve an image by state name and file name
+exports.getImage = async (req, res) => {
+  try {
+    const { state, fileName } = req.query; // Pass state and fileName as query parameters
+    const filePath = path.join(UPLOADS_ROOT, state.replace(/ /g, "_"), fileName);
 
-  if (fs.existsSync(filePath)) {
-    return res.status(200).sendFile(path.resolve(filePath));
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "Image not found." });
+    }
+
+    res.sendFile(filePath);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  res.status(404).json({ message: "Image not found" });
-};
-
-module.exports = {
-  createAddress: [upload.single("stateImage"), createAddress],
-  getAllAddresses,
-  getAddressByFilters,
-  updateAddress: [upload.single("stateImage"), updateAddress],
-  deleteAddress,
-  getImage,
-  getAllAddressesWithCategories
 };

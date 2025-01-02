@@ -67,3 +67,23 @@
     align-items: stretch;
     flex: 1 0 auto; /* Ensure slides grow and shrink appropriately */
   }
+
+  .fw-bold {
+    scrollbar-width: thin; /* Firefox - Thin scrollbar */
+    scrollbar-color: #ef156c #f0f0f0; /* Firefox - Custom colors */
+  }
+  
+  /* Chrome, Edge, and Safari */
+  .fw-bold::-webkit-scrollbar {
+    width: 4px; /* Scrollbar width */
+  }
+  
+  .fw-bold::-webkit-scrollbar-thumb {
+    background: #ef156c; /* Scrollbar thumb color */
+    border-radius: 10px; /* Rounded corners */
+  }
+  
+  .fw-bold::-webkit-scrollbar-track {
+    background: #f0f0f0; /* Scrollbar track color */
+  }
+  

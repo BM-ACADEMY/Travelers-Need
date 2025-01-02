@@ -1,34 +1,36 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-// Define the payment schema
 const paymentSchema = new mongoose.Schema({
   bookingId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Booking', // Reference to the Booking model
-    required: [true, 'Booking ID is required'],
+    ref: "Booking", // Reference to Booking model
+    required: true,
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Reference to the User model
-    required: [true, 'User ID is required'],
+    ref: "User", // Reference to User model
+    required: true,
   },
   price: {
     type: Number,
-    required: [true, 'Price is required'],
+    required: true,
+    min: [0, "Price must be a positive number"],
   },
   upiTransactionId: {
     type: String,
-    required: [true, 'UPI Transaction ID is required'],
-    unique: true, // Ensure the transaction ID is unique
+    required: true,
+    unique: true, // Ensure transaction ID is unique
   },
   status: {
     type: String,
-    enum: ['Pending', 'Completed', 'Failed'], // Payment statuses
-    default: 'Pending', // Default status
+    enum: ["Pending", "Completed", "Failed"], // Payment statuses
+    default: "Pending",
   },
-}, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
+  paymentMethod: {
+    type: String,
+    enum: ["UPI", "Credit Card", "Debit Card", "Net Banking"],
+    default:"UPI"
+  },
+}, { timestamps: true });
 
-// Create the Payment model
-const Payment = mongoose.model('Payment', paymentSchema);
-
-module.exports = Payment;
+module.exports = mongoose.model("Payment", paymentSchema);

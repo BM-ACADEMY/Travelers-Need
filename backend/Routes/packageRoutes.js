@@ -8,7 +8,8 @@ const {
   deletePackage,
   getImage,
   getFilteredPackages,
-  getTopDestinationPackagesGroupedByState
+  getTopDestinationPackagesGroupedByState,
+  getPackageByIdWithFilter
 } = require('../Controller/packageController');
 const upload = require('../Middleware/uploadMiddleware'); // Import upload middleware
 
@@ -31,6 +32,8 @@ router.get('/cities-by-state/:stateName', getCitiesByState);
 
 // **GET**: Retrieve a package by ID (dynamic route)
 router.get('/get-package-by-id/:packageId', getPackageById);
+router.get('/get-package-by-id-with-filter/:packageId', getPackageByIdWithFilter);
+
 router.get('/get-top-destinations-by-state', getTopDestinationPackagesGroupedByState);
 
 // **PUT**: Update a package by ID

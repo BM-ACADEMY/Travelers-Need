@@ -3,9 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
-// const nodemailer = require("nodemailer");
 const bodyParser = require("body-parser");
-const path =require('path');
 
 // Import routes
 const userRoutes = require('./Routes/userRoutes');
@@ -13,8 +11,10 @@ const themesRoutes = require('./Routes/themesRoutes');
 const packageRoutes = require('./Routes/packageRoutes');
 const bookingRoutes = require('./Routes/bookingRoutes');
 const paymentRoutes = require('./Routes/paymentRoutes');
-const addressRoutes=require('./Routes/addressRoutes');
-const reviewRoutes=require('./Routes/reviewRoutes');
+const addressRoutes = require('./Routes/addressRoutes');
+const reviewRoutes = require('./Routes/reviewRoutes');
+const placeRoutes = require('./Routes/placeRoutes');
+const tourPlanRoutes = require('./Routes/tourPlanRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -29,9 +29,9 @@ app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 app.use(morgan('dev')); // Log HTTP requests
 
-
 // Connect to MongoDB Atlas
 const mongoURI = process.env.MONGODB_URL;
+mongoose.set('strictPopulate', false);
 
 const connectToMongoDB = async () => {
   try {
@@ -55,9 +55,15 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/address', addressRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/places', placeRoutes);
+app.use('/api/tour-plans', tourPlanRoutes);
 
-// Static folder for uploaded files
+// Static folders for uploaded files
 app.use("/uploads", express.static("uploads/packages"));
+app.use("/uploads", express.static("uploads/places"));
+app.use("/uploads", express.static("uploads/tourPlans"));
+app.use("/uploads", express.static("uploads/themes")); // Serve theme images
+app.use("/uploads", express.static("uploads/state")); // Serve theme images
 
 // Root endpoint
 app.get('/', (req, res) => {

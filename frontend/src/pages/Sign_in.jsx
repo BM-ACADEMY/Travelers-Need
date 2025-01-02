@@ -233,11 +233,11 @@ const Sign_in = ({ open, onClose, onSignUpClick }) => {
               <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>
                 Welcome to Sign In
               </h1>
-              <p style={{ fontSize: "1rem" }}>
+              <p style={{ fontSize: "1rem" ,color:'white'}}>
                 Don't have an account?{" "}
                 <span
                   style={{
-                    color: "yellow",
+                    color: "white",
                     textDecoration: "underline",
                     fontWeight: "bold",
                     cursor: "pointer",

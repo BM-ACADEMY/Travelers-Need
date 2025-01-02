@@ -1,9 +1,11 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import axios from "axios";
 import "leaflet/dist/leaflet.css";
 import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen";
 import L from "leaflet";
+import "../components/MapComponent.css"; // Import your custom styles
 
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
@@ -14,67 +16,41 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
 });
 
-// Custom Zoom Controls
-const ZoomControl = () => {
+// Custom Zoom Controls Component
+const CustomZoomControl = () => {
   const map = useMap();
 
-  const handleZoomIn = () => {
-    map.zoomIn();
-  };
-
-  const handleZoomOut = () => {
-    map.zoomOut();
-  };
-
-  useEffect(() => {
-    L.control.fullscreen({ position: "topright" }).addTo(map); // Add Fullscreen Control
-  }, [map]);
+  const handleZoomIn = () => map.zoomIn();
+  const handleZoomOut = () => map.zoomOut();
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        bottom: "10px",
-        right: "10px",
-        zIndex: 1000,
-      }}
-    >
-      <button
-        onClick={handleZoomIn}
-        style={{
-          display: "block",
-          backgroundColor: "white",
-          border: "1px solid #ccc",
-          padding: "10px",
-          borderRadius: "4px",
-          marginBottom: "5px",
-          cursor: "pointer",
-        }}
-      >
+    <div className="zoom-controls">
+      <button className="zoom-button" onClick={handleZoomIn}>
         +
       </button>
-      <button
-        onClick={handleZoomOut}
-        style={{
-          display: "block",
-          backgroundColor: "white",
-          border: "1px solid #ccc",
-          padding: "10px",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
+      <button className="zoom-button" onClick={handleZoomOut}>
         −
       </button>
     </div>
   );
 };
 
+// Custom Fullscreen Control
+const FullscreenControl = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    L.control.fullscreen({ position: "topright" }).addTo(map); // Add Fullscreen Control
+  }, [map]);
+
+  return null;
+};
+
 const createCustomIcon = (stateName, startingPrice) => {
   return L.divIcon({
     className: "custom-marker-label",
     html: `
-      <div style="background: rgba(0,0,0,0.6); color: white; padding: 5px 10px; border-radius: 10px; font-size: 12px; text-align: center;">
+      <div>
         <strong>${stateName}</strong><br/>
         ₹${startingPrice}
       </div>
@@ -84,14 +60,48 @@ const createCustomIcon = (stateName, startingPrice) => {
   });
 };
 
-const MapComponent = ({ locationDetails }) => {
+const MapComponent = () => {
+  const [locationDetails, setLocationDetails] = useState([]); // State for API data
+  const [loading, setLoading] = useState(true);
   const centerPosition = [11.0168, 76.9558]; // Center of the map
+  const Baseurl=import.meta.env.VITE_BASE_URL;
+  const getApi=import.meta.env.VITE_MAP_DATA_ENDPOINT;
+ const fullUrl = "http://localhost:3000/api/address/get-all-addresses";
+  // Fetch data from the API using Axios
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        
+        const response = await axios.get(fullUrl);
+        const data = response.data.addresses;
+
+        // Transform data to match locationDetails structure
+        const transformedData = data.map((address) => ({
+          stateName: address.cityName,
+          coordinates: address.coordinates,
+          startingPrice: address.startingPrice,
+        }));
+        setLocationDetails(transformedData);
+      } catch (error) {
+        console.error("Error fetching location data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <p>Loading map...</p>;
+  }
 
   return (
     <MapContainer
       center={centerPosition}
       zoom={7}
       style={{ height: "100%", width: "100%" }}
+      zoomControl={false} // Disable default zoom control
     >
       {/* Add Tile Layer */}
       <TileLayer
@@ -99,8 +109,11 @@ const MapComponent = ({ locationDetails }) => {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
 
-      {/* Add Zoom-In and Zoom-Out Controls */}
-      <ZoomControl />
+      {/* Add Custom Fullscreen Control */}
+      <FullscreenControl />
+
+      {/* Add Custom Zoom Controls */}
+      <CustomZoomControl />
 
       {/* Add Markers with Labels */}
       {locationDetails.map((location, index) => (
@@ -110,11 +123,9 @@ const MapComponent = ({ locationDetails }) => {
           icon={createCustomIcon(location.stateName, location.startingPrice)}
         >
           <Popup>
-            <div style={{ textAlign: "center" }}>
-              <h6 style={{ margin: "0" }}>{location.stateName}</h6>
-              <p style={{ margin: "0", fontSize: "14px" }}>
-                Starting from: <strong>₹{location.startingPrice}</strong>
-              </p>
+            <div>
+              <h6>{location.stateName}</h6>
+              <p>Starting from: <strong>₹{location.startingPrice}</strong></p>
             </div>
           </Popup>
         </Marker>

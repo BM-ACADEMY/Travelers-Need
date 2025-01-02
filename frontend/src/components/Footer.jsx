@@ -119,7 +119,7 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
         <hr />
         <div className="d-flex justify-content-between align-items-center">
           <p className="mb-0">
-            &copy; 2015 - {currentYear} Tripzy Vacations Pvt Ltd. All Photos from flickr.
+            &copy; 2013 - {currentYear} Travelers Need Pvt Ltd.
           </p>
 
           {/* Social Media Icons */}

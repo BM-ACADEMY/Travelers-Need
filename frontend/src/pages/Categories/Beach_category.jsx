@@ -1,57 +1,53 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import StateCard from './Statecard/StateCard';
 
-const Beach_category = ({beachData}) => {
-    if (!beachData || Object.keys(beachData).length === 0) {
-        return <div className="text-center">No Beach Destinations Available</div>;
-      }
-    
-      return (
+const Beach_category = ({ beachData }) => {
+    // Validate beachData
+    if (!beachData || !Array.isArray(beachData) || beachData.length === 0) {
+        return <p className="text-center">No Beach Destinations Available</p>;
+    }
+
+    useEffect(() => {
+        console.log(beachData);
+    }, [beachData]);
+
+    return (
         <div className="container mt-5">
-          <h2 className="text-center mb-4">BEACH DESTINATIONS</h2>
-          <div className="row">
-            {Object.keys(beachData).map((state, index) => {
-              const stateDetails = beachData[state]?.stateDetails || {};
-              const cityDetails = beachData[state]?.cities || {};
-    
-              // Extract stateName and fileName from the stateImage path
-              const stateImagePath = stateDetails.stateImage || "";
-              const parts = stateImagePath.split("\\"); // Split path by backslashes
-    
-              let stateName = state; // Default to the state key
-              let fileName = "";
-    
-              // Validate and extract stateName and fileName from the path
-              if (parts.length >= 3) {
-                stateName = parts[2]; // Extract "beach_name" from the path
-                fileName = parts.pop(); // Extract the file name
-              } else {
-                console.warn("Unexpected stateImage format:", stateImagePath);
-              }
-    
-              // Construct the stateImage URL dynamically
-              const stateImageURL = `http://localhost:3000/api/address/image?stateName=${encodeURIComponent(
-                stateName
-              )}&fileName=${encodeURIComponent(fileName)}`;
-    
-              const firstCity = Object.keys(cityDetails)[0];
-              const firstPackage = cityDetails[firstCity]?.[0]?.name || "No Packages";
-    
-              return (
-                <div key={index} className="col-md-4 mb-4">
-                  <StateCard
-                    stateName={stateDetails.stateName || state}
-                    stateImage={stateImageURL} // Use dynamically constructed URL
-                    startingPrice={stateDetails.startingPrice}
-                    cityCount={Object.keys(cityDetails).length}
-                    packageName={firstPackage}
-                  />
-                </div>
-              );
-            })}
-          </div>
+            <h4 className=" mb-4" style={{ color: 'rgba(40,41,65,1)' }}>BEACH DESTINATIONS</h4>
+            <div className="row">
+                {beachData.map((stateData, index) => {
+                    const stateName = stateData.state || 'Unknown'; // Extract state name
+                    const startingPrice = stateData.startingPrice || 'N/A'; // Extract starting price
+                    const imagePath = stateData.image || ''; // Extract image path
+                    const tourPlans = stateData.tourPlans || []; // Extract tour plans
+
+                    // Construct dynamic image URL
+                    let stateImageURL = '';
+                    if (imagePath) {
+                        const parts = imagePath.split('\\'); // Split the path by backslashes
+                        const fileName = parts.pop(); // Get the file name
+                        const stateCode = parts.length > 0 ? parts[0] : 'Unknown'; // Get the state code
+
+                        stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+                            stateCode
+                        )}&fileName=${encodeURIComponent(fileName)}`;
+                    }
+
+                    return (
+                        <div key={index} className="col-md-4 col-lg-3 mb-4">
+                            <StateCard
+                                stateName={stateName}
+                                stateImage={stateImageURL} // Use the dynamically constructed image URL
+                                startingPrice={startingPrice}
+                                cityCount={stateData.tourPlanCount} // Number of tour plans
+                                packageName={tourPlans[0]?.title || 'No Packages'} // First package title
+                            />
+                        </div>
+                    );
+                })}
+            </div>
         </div>
-      );
-}
+    );
+};
 
 export default Beach_category;

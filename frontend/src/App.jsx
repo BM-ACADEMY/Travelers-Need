@@ -32,7 +32,7 @@ export default function App() {
           <Route path="/city-view" element={<CityView />}/>
           <Route path="/state/:stateName" element={<StatePage/>} />
           <Route path="/themes/:themename" element={<ThemePage />} />
-          <Route path="/package/:packageId" element={<PackagePage/>} />
+          <Route exact path="/tour-plan/:tourCode" element={<PackagePage/>} />
           <Route path="/top-destinations" element={<Top_destinations/>} />
           <Route path="/package-details-page/:packageId" element={<PackageDetailsPage/>} />
         </Route>

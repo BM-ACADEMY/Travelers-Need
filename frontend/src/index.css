@@ -99,7 +99,9 @@
   body {
     overflow-x: hidden; 
     background-color: white;
-    font-family: Verdana, Geneva, Tahoma, sans-serif !important;
+    font-family: 'Josefin Sans', sans-serif !important;
+    list-style: none !important;
+    text-decoration: none !important;
   }
 
   .signup-container {

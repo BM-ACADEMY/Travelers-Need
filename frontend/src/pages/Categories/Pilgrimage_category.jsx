@@ -1,57 +1,58 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import StateCard from './Statecard/StateCard';
 
-const Pilgrimage_category = ({pilgrimageData}) => {
-    if (!pilgrimageData || Object.keys(pilgrimageData).length === 0) {
-        return <div className="text-center">No Pilgrimage Destinations Available</div>;
-      }
-    
-      return (
+const Pilgrimage_category = ({ pilgrimageData }) => {
+    // Validate the input data
+    if (!pilgrimageData || !Array.isArray(pilgrimageData) || pilgrimageData.length === 0) {
+        return <p className="text-center">No Pilgrimage Destinations Available</p>;
+    }
+
+    useEffect(() => {
+        console.log('Pilgrimage Data:', pilgrimageData);
+    }, [pilgrimageData]);
+
+    return (
         <div className="container mt-5">
-          <h2 className="text-center mb-4">PILGRIMAGE DESTINATIONS</h2>
-          <div className="row">
-            {Object.keys(pilgrimageData).map((state, index) => {
-              const stateDetails = pilgrimageData[state]?.stateDetails || {};
-              const cityDetails = pilgrimageData[state]?.cities || {};
-    
-              // Extract stateName and fileName from the stateImage path
-              const stateImagePath = stateDetails.stateImage || "";
-              const parts = stateImagePath.split("\\"); // Split path by backslashes
-    
-              let stateName = state; // Default to the state key
-              let fileName = "";
-    
-              // Validate and extract stateName and fileName from the path
-              if (parts.length >= 3) {
-                stateName = parts[2]; // Extract "pilgrimage_name" from the path
-                fileName = parts.pop(); // Extract the file name
-              } else {
-                console.warn("Unexpected stateImage format:", stateImagePath);
-              }
-    
-              // Construct the stateImage URL dynamically
-              const stateImageURL = `http://localhost:3000/api/address/image?stateName=${encodeURIComponent(
-                stateName
-              )}&fileName=${encodeURIComponent(fileName)}`;
-    
-              const firstCity = Object.keys(cityDetails)[0];
-              const firstPackage = cityDetails[firstCity]?.[0]?.name || "No Packages";
-    
-              return (
-                <div key={index} className="col-md-4 mb-4">
-                  <StateCard
-                    stateName={stateDetails.stateName || state}
-                    stateImage={stateImageURL} // Use dynamically constructed URL
-                    startingPrice={stateDetails.startingPrice}
-                    cityCount={Object.keys(cityDetails).length}
-                    packageName={firstPackage}
-                  />
-                </div>
-              );
-            })}
-          </div>
+            <h4 className=" mb-4" style={{color :'rgba(40,41,65,1)'}}>PILGRIMAGE DESTINATIONS</h4>
+            <div className="row">
+                {pilgrimageData.map((stateData, index) => {
+                    const {
+                        state = 'Unknown', // State name
+                        startingPrice = 'N/A', // Starting price
+                        image = '', // Image path
+                        tourPlans = [], // Tour plans
+                        tourPlanCount = 0, // Number of tour plans
+                    } = stateData;
+
+                    // Construct the dynamic image URL
+                    let stateImageURL = '';
+                    if (image) {
+                        const parts = image.split('\\');
+                        const fileName = parts.pop();
+                        const stateCode = parts.join('\\'); // Ensure correct state extraction
+                        stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+                            stateCode
+                        )}&fileName=${encodeURIComponent(fileName)}`;
+                    }
+
+                    // Prepare StateCard props
+                    const firstPackageName = tourPlans.length > 0 ? tourPlans[0].title : 'No Packages';
+
+                    return (
+                        <div key={index} className="col-md-4 col-lg-3 mb-4">
+                            <StateCard
+                                stateName={state} // State name
+                                stateImage={stateImageURL} // Image URL
+                                startingPrice={startingPrice} // Starting price
+                                cityCount={tourPlanCount} // Number of cities
+                                packageName={firstPackageName} // First package name
+                            />
+                        </div>
+                    );
+                })}
+            </div>
         </div>
-      );
-}
+    );
+};
 
 export default Pilgrimage_category;

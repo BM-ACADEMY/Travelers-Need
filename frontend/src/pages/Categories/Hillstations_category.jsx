@@ -3,12 +3,12 @@ import StateCard from './Statecard/StateCard';
 
 const Hillstations_category = ({hillStationsData}) => {
     if (!hillStationsData || Object.keys(hillStationsData).length === 0) {
-        return <div className="text-center">No Hill Station Destinations Available</div>;
+        return <p className="text-center">No Hill Station Destinations Available</p>;
       }
     
       return (
         <div className="container mt-5">
-          <h2 className="text-center mb-4">HILL STATION DESTINATIONS</h2>
+          <h4 className=" mb-4" style={{color :'rgba(40,41,65,1)'}}>HILL STATION DESTINATIONS</h4>
           <div className="row">
             {Object.keys(hillStationsData).map((state, index) => {
               const stateDetails = hillStationsData[state]?.stateDetails || {};
@@ -38,7 +38,7 @@ const Hillstations_category = ({hillStationsData}) => {
               const firstPackage = cityDetails[firstCity]?.[0]?.name || "No Packages";
     
               return (
-                <div key={index} className="col-md-4 mb-4">
+                <div key={index} className="col-md-4 col-lg-2 mb-4">
                   <StateCard
                     stateName={stateDetails.stateName || state}
                     stateImage={stateImageURL} // Use dynamically constructed URL

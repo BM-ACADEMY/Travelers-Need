@@ -69,8 +69,8 @@ const Navbar = () => {
             src={logo}
             alt="Logo"
             style={{
-              width: "150px",
-              height: "80px",
+              width: "155px",
+              height: "125px",
               transition: "transform 0.3s ease",
             }}
             onMouseEnter={(e) =>

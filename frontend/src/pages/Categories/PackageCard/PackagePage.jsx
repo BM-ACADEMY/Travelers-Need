@@ -32,7 +32,7 @@ import "swiper/css/thumbs";
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 
 const PackagePage = () => {
-  const { packageId } = useParams();
+  const { tourCode } = useParams();
   const { user, login } = useUser();
   const swiperRef = useRef(null);
   const [packageDetails, setPackageDetails] = useState(null);
@@ -69,27 +69,29 @@ const PackagePage = () => {
   const [isBookingConfirmed, setIsBookingConfirmed] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
+  const itineraryRef = useRef(null);
+  const inclusionsRef = useRef(null);
+  const bookingPolicyRef = useRef(null);
   const isDateValid = (date) => {
     const today = new Date().toISOString().split("T")[0];
     return date >= today;
+  };
+  const scrollToSection = (ref) => {
+    if (ref.current) {
+      ref.current.scrollIntoView({ behavior: "smooth" });
+    }
   };
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [packageResponse, reviewsResponse] = await Promise.all([
-          axios.get(
-            `http://localhost:3000/api/packages/get-package-by-id/${packageId}`
-          ),
-          axios.get(
-            `http://localhost:3000/api/reviews/get-reviews-by-package/${packageId}`
-          ),
-        ]);
+        const response = await axios.get(
+          `http://localhost:3000/api/tour-plans/tour-plans/tour-code/${tourCode}`
+        );
 
-        setPackageDetails(packageResponse.data);
-        setReviews(reviewsResponse.data.reviews);
-        console.log(reviewsResponse.data.reviews,'rev');
-        
+        setPackageDetails(response.data.tourPlan); // Assuming the response contains `tourPlan` key
+        setReviews(response.data.tourPlan.reviews || []); // Assuming reviews are part of the `tourPlan` object
+        console.log(response.data.tourPlan.reviews, "rev");
       } catch (err) {
         setError(err.response?.data?.error || "Error fetching data");
       } finally {
@@ -98,7 +100,8 @@ const PackagePage = () => {
     };
 
     fetchData();
-  }, [packageId]);
+  }, [tourCode]);
+
   const scrollToBookingForm = () => {
     if (!user) {
       setSignInOpen(true);
@@ -162,8 +165,8 @@ const PackagePage = () => {
 
   const calculateTotal = () => {
     return (
-      formData.adults * packageDetails.price +
-      formData.children * (packageDetails.price * 0.5)
+      formData.adults * packageDetails?.baseFare +
+      formData.children * (packageDetails?.baseFare * 0.5)
     );
   };
 
@@ -182,7 +185,7 @@ const PackagePage = () => {
 
     const bookingData = {
       userId: user.userId, // Assuming user context provides `id`
-      packageId,
+      packageId: packageDetails._id,
       price: calculateTotal(), // Function to calculate price
       status: "Confirmed",
       adultCount: formData.adults,
@@ -203,7 +206,8 @@ const PackagePage = () => {
       );
       console.log("Booking successful:", response.data.booking);
       setPackagePrice(response.data.booking.price);
-      setOrderId(response.data.booking._id);
+      setOrderId(response.data.booking.orderId);
+      setBookingId(response.data.booking.bookingId);
       setIsBookingConfirmed(true);
       // Handle success: Navigate, show success message, etc.
     } catch (error) {
@@ -214,8 +218,10 @@ const PackagePage = () => {
 
   const handlePaymentSubmit = async () => {
     try {
+      // console.log(orderId);
+
       const paymentData = {
-        bookingId: orderId,
+        bookingId: bookingId,
         userId: user.userId,
         price: packagePrice,
         upiTransactionId: formData.transactionId,
@@ -261,28 +267,14 @@ const PackagePage = () => {
     addressId,
     images,
   } = packageDetails;
-
-  // const packageImagePath = images?.[images.length - 1] || "";
-  // const normalizedPath = packageImagePath.replace(/\\/g, "/");
-  // const pathParts = normalizedPath.split("/");
-  // const packageIndex = pathParts.findIndex((part) => part === "packages");
-  // const packageName = packageIndex !== -1 ? pathParts[packageIndex + 1] : "";
-  // const fileName = pathParts.pop();
-
-  // const packageImageURL = `http://localhost:3000/api/packages/get-package-image?packageName=${encodeURIComponent(
-  //   packageName
-  // )}&fileName=${encodeURIComponent(fileName)}`;
-  // Assuming 'images' is an array of image paths
   const packageImageURLs = images.map((imagePath) => {
-    const normalizedPath = imagePath.replace(/\\/g, "/"); // Normalize path
-    const pathParts = normalizedPath.split("/");
-    const packageIndex = pathParts.findIndex((part) => part === "packages");
-    const packageName = packageIndex !== -1 ? pathParts[packageIndex + 1] : "";
-    const fileName = pathParts.pop();
+    const parts = imagePath.split("\\"); // Split the image path
+    const tourCode = parts[0] || "";
+    const fileName = parts[1] || "";
 
-    // Generate the image URL
-    return `http://localhost:3000/api/packages/get-package-image?packageName=${encodeURIComponent(
-      packageName
+    // Generate and return the image URL for each image
+    return `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
+      tourCode
     )}&fileName=${encodeURIComponent(fileName)}`;
   });
 
@@ -296,119 +288,209 @@ const PackagePage = () => {
   return (
     <div className="container mt-5">
       {/* Package Header */}
+      <div>
+        <h4>{packageDetails?.title}</h4>
+        <p>
+          {packageDetails?.addressId?.state}, {packageDetails?.addressId?.city}
+        </p>
+      </div>
       <div className="card mb-4 shadow-hover">
         <div className="row g-0">
           {/* Swiper Section */}
           <div className="col-md-6">
             {/* Main Image Swiper */}
             <div className="swiper-container position-relative">
-              <Swiper
-                ref={swiperRef}
-                style={{
-                  "--swiper-navigation-color": "#fff",
-                  "--swiper-pagination-color": "#fff",
-                }}
-                loop={true}
-                spaceBetween={10}
-                thumbs={{ swiper: thumbsSwiper }}
-                modules={[Navigation, Thumbs]}
-                className="mySwiper2"
-              >
-                {packageImageURLs.map((url, index) => (
-                  <SwiperSlide key={index}>
-                    <img src={url} alt={`Slide ${index + 1}`} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+              {packageImageURLs.length === 1 ? (
+                // Show a single image if only one image is available
+                <img
+                  src={packageImageURLs[0]}
+                  alt="Tour Image"
+                  style={{
+                    width: "100%",
+                    borderRadius: "8px",
+                    objectFit: "cover",
+                  }}
+                />
+              ) : (
+                // Use Swiper for multiple images
+                <>
+                  <Swiper
+                    ref={swiperRef}
+                    style={{
+                      "--swiper-navigation-color": "#fff",
+                      "--swiper-pagination-color": "#fff",
+                    }}
+                    loop={true}
+                    spaceBetween={10}
+                    thumbs={{ swiper: thumbsSwiper }}
+                    modules={[Navigation, Thumbs]}
+                    className="mySwiper2"
+                  >
+                    {packageImageURLs.map((url, index) => (
+                      <SwiperSlide key={index}>
+                        <img
+                          src={url}
+                          alt={`Slide ${index + 1}`}
+                          style={{
+                            width: "100%",
+                            borderRadius: "8px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
 
-              {/* Custom Navigation Buttons */}
-              <button
-                className="custom-navigation-button custom-navigation-button-prev"
-                onClick={() => swiperRef.current.swiper.slidePrev()}
-              >
-                &#10094; {/* Left Arrow */}
-              </button>
-              <button
-                className="custom-navigation-button custom-navigation-button-next"
-                onClick={() => swiperRef.current.swiper.slideNext()}
-              >
-                &#10095; {/* Right Arrow */}
-              </button>
+                  {/* Custom Navigation Buttons */}
+                  <button
+                    className="custom-navigation-button custom-navigation-button-prev"
+                    onClick={() => swiperRef.current.swiper.slidePrev()}
+                  >
+                    &#10094; {/* Left Arrow */}
+                  </button>
+                  <button
+                    className="custom-navigation-button custom-navigation-button-next"
+                    onClick={() => swiperRef.current.swiper.slideNext()}
+                  >
+                    &#10095; {/* Right Arrow */}
+                  </button>
 
-              {/* Thumbnail Swiper */}
-              <Swiper
-                onSwiper={setThumbsSwiper}
-                loop={true}
-                spaceBetween={10}
-                slidesPerView={4}
-                watchSlidesProgress={true}
-                modules={[Thumbs]}
-                className="mySwiper"
-              >
-                {packageImageURLs.map((url, index) => (
-                  <SwiperSlide key={index}>
-                    <img src={url} alt={`Thumbnail ${index + 1}`} />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+                  {/* Thumbnail Swiper */}
+                  <Swiper
+                    onSwiper={setThumbsSwiper}
+                    loop={true}
+                    spaceBetween={10}
+                    slidesPerView={4}
+                    watchSlidesProgress={true}
+                    modules={[Thumbs]}
+                    className="mySwiper"
+                  >
+                    {packageImageURLs.map((url, index) => (
+                      <SwiperSlide key={index}>
+                        <img
+                          src={url}
+                          alt={`Thumbnail ${index + 1}`}
+                          style={{
+                            width: "100%",
+                            borderRadius: "4px",
+                            objectFit: "cover",
+                          }}
+                        />
+                      </SwiperSlide>
+                    ))}
+                  </Swiper>
+                </>
+              )}
             </div>
           </div>
 
           {/* Package Details Section */}
           <div className="col-md-6 d-flex align-items-center">
             <div className="card-body">
-              <h2 className="card-title fw-bold hover-text-primary">{name}</h2>
-              <p className="text-muted mb-2">{addressId?.state}</p>
-              <h5 className=" mb-3" style={{ color: "#ef156c" }}>
-                ₹{price} per Adult
-              </h5>
-              <p className="mb-2">
-                <strong>Duration:</strong> {duration}
-              </p>
-              <p className="mb-2">
-                <strong>Best Month to Visit:</strong> {bestMonth}
-              </p>
-              <button
-                className="btn  mt-3"
-                style={{ backgroundColor: "#ef156c", color: "white" }}
-                onClick={scrollToBookingForm}
-              >
-                Book Now
-              </button>
+              {/* Rating */}
+              <div className="d-flex align-items-center mb-3">
+                <span className="me-2">Rating:</span>
+                {Array.from({ length: 5 }, (_, index) => (
+                  <span
+                    key={index}
+                    style={{
+                      color:
+                        index < (packageDetails?.reviews?.averageRating || 4)
+                          ? "#ffc107"
+                          : "#e4e5e9",
+                      fontSize: "18px",
+                    }}
+                  >
+                    ★
+                  </span>
+                ))}
+                <span className="ms-2 text-muted">
+                  ({packageDetails?.reviews?.count || 0} Reviews)
+                </span>
+              </div>
+
+              {/* Prices */}
+              <div className="d-flex align-items-center mb-3">
+                <h6
+                  className="mb-0 me-3"
+                  style={{ textDecoration: "line-through", color: "#6c757d" }}
+                >
+                  ₹{packageDetails?.origFare}
+                </h6>
+                <h4 className="mb-0" style={{ color: "#ef156c" }}>
+                  ₹{packageDetails?.baseFare}
+                </h4>
+                <span className="ms-2 text-muted">(Per Adult)</span>
+              </div>
+
+              {/* Icons */}
+              <div className="d-flex justify-content-start align-items-center gap-4 mb-4">
+                <div className="text-center">
+                  <i className="fas fa-bed" style={{ fontSize: "20px" }}></i>
+                  <p className="mb-0 mt-1" style={{ fontSize: "14px" }}>
+                    Stay
+                  </p>
+                </div>
+                <div className="text-center">
+                  <i className="fas fa-car" style={{ fontSize: "20px" }}></i>
+                  <p className="mb-0 mt-1" style={{ fontSize: "14px" }}>
+                    Travel
+                  </p>
+                </div>
+                <div className="text-center">
+                  <i
+                    className="fas fa-binoculars"
+                    style={{ fontSize: "20px" }}
+                  ></i>
+                  <p className="mb-0 mt-1" style={{ fontSize: "14px" }}>
+                    Sightseeing
+                  </p>
+                </div>
+                <div className="text-center">
+                  <i
+                    className="fas fa-utensils"
+                    style={{ fontSize: "20px" }}
+                  ></i>
+                  <p className="mb-0 mt-1" style={{ fontSize: "14px" }}>
+                    Breakfast
+                  </p>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="d-flex justify-content-center gap-3">
+                <button
+                  className="btn"
+                  style={{
+                    backgroundColor: "#ef156c",
+                    color: "white",
+                    minWidth: "150px",
+                  }}
+                  onClick={scrollToBookingForm}
+                >
+                  Book Now
+                </button>
+                <button
+                  className="btn btn-outline-secondary"
+                  style={{ minWidth: "150px" }}
+                  onClick={() => {
+                    const phoneNumber = "919944940051"; // Replace with your WhatsApp number
+                    const message = encodeURIComponent(
+                      "Hello, I would like to customize my travel package."
+                    );
+                    window.location.href = `https://wa.me/${phoneNumber}?text=${message}`;
+                  }}
+                >
+                  Customize
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Description  */}
-      <div className="card mb-4 shadow-hover">
-        <div
-          className="card-header  text-white fw-bold"
-          style={{ backgroundColor: "rgba(40, 41, 65, 1)" }}
-        >
-          Description
-        </div>
-        <div className="card-body">
-          <div
-            className={`description-content ${
-              showFullDescription ? "full" : "collapsed"
-            }`}
-            style={
-              showFullDescription
-                ? { maxHeight: "none", overflowY: "scroll" }
-                : { maxHeight: "4.5rem", overflow: "hidden" }
-            }
-          >
-            <p>{packageDescription}</p>
-          </div>
-          <button className="btn btn-link p-0" onClick={toggleDescription}>
-            {showFullDescription ? "Read Less" : "Read More"}
-          </button>
-        </div>
-      </div>
-
       {/* Inclusions */}
-      <div className="card mb-4 shadow-hover">
+      {/* <div className="card mb-4 shadow-hover">
         <div
           className="card-header text-white fw-bold"
           style={{ backgroundColor: "rgba(40, 41, 65, 1)" }}
@@ -424,18 +506,118 @@ const PackagePage = () => {
             ))}
           </ul>
         </div>
-      </div>
+      </div> */}
+      <div className="container mt-4">
+        {/* Navigation Menu */}
+        <div className="d-flex justify-content-around align-items-center border-bottom pb-2 mb-4">
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => scrollToSection(itineraryRef)}
+          >
+            <i className="fas fa-calendar-alt fa-2x"></i>
+            <p className="mt-1">Itinerary</p>
+          </div>
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => scrollToSection(inclusionsRef)}
+          >
+            <i className="fas fa-list-alt fa-2x"></i>
+            <p className="mt-1">Details</p>
+          </div>
+          <div
+            className="text-center cursor-pointer"
+            onClick={() => scrollToSection(bookingPolicyRef)}
+          >
+            <i className="fas fa-file-alt fa-2x"></i>
+            <p className="mt-1">Booking Policy</p>
+          </div>
+        </div>
 
+        {/* Itinerary Section */}
+        <div ref={itineraryRef} className="mb-5">
+          <h3 className="mb-3">Itinerary</h3>
+          {packageDetails.itinerary.map((day, index) => (
+            <div key={index} className="mb-4">
+              <h5>
+                Day {day.day}: {day.title}
+              </h5>
+              <p>
+                <strong>Start Time:</strong> {day.startTime}
+                {index === packageDetails.itinerary.length - 1 && (
+                  <>
+                    {" "}
+                    | <strong>End Time:</strong> {day.endTime}
+                  </>
+                )}
+              </p>
+              <ul>
+                {day.activities.map((activity, i) => (
+                  <li key={i}>{activity}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Combined Details Section */}
+        <div ref={inclusionsRef} className="mb-5">
+          <h3 className="mb-3">Details</h3>
+
+          {/* Inclusions */}
+          <div className="mb-4">
+            <h5>Inclusions</h5>
+            <ul>
+              {packageDetails.inclusions.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Exclusions */}
+          <div className="mb-4">
+            <h5>Exclusions</h5>
+            <ul>
+              {packageDetails.exclusions.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Optional */}
+          <div className="mb-4">
+            <h5>Optional</h5>
+            <ul>
+              {packageDetails.optional.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Booking Policy Section */}
+        <div ref={bookingPolicyRef} className="mb-5">
+          <h3 className="mb-3">Booking Policy</h3>
+          <ul>
+            {packageDetails?.bookingPolicy?.map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
       {/* Booking Form */}
       <div>
         {!isBookingConfirmed ? (
-          <div ref={bookingFormRef} className="card mb-4 shadow-hover">
-            <div
-              className="card-header  text-white fw-bold"
-              style={{ backgroundColor: "rgba(40, 41, 65, 1)" }}
+          <div ref={bookingFormRef} className="card mb-4 ">
+            <h4
+              className="card fw-bold"
+              style={{
+                border: "none",
+                color: "rgba(40,41,65,1)",
+                padding: "10px",
+              }}
             >
               {paymentStep ? "Payment Form" : "Booking Form"}
-            </div>
+            </h4>
             <div className="card-body">
               <Stepper activeStep={activeStep} alternativeLabel>
                 {steps.map((label) => (
@@ -678,7 +860,7 @@ const PackagePage = () => {
               <div className="payment-success-card text-center">
                 <div className="success-animation">
                   <img
-                    src="https://via.placeholder.com/150/00FF00?text=Success" // Replace with an animated success GIF if needed
+                    src="https://via.placeholder.com/150/00FF00?text=Success" // Example animated success GIF
                     alt="Payment Success"
                     style={{
                       width: 150,

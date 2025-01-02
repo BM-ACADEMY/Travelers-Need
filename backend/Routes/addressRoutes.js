@@ -1,4 +1,6 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
 const {
   createAddress,
   getAllAddresses,
@@ -6,28 +8,21 @@ const {
   updateAddress,
   deleteAddress,
   getImage,
-  getAllAddressesWithCategories
+  getAllAddressesWithCategories,
 } = require("../Controller/addressController");
 
 const router = express.Router();
 
-// Create a new address with dynamic image upload
-router.post("/create", createAddress);
+// Configure multer for file uploads
+const upload = multer({ dest: path.join(__dirname, "..", "temp") }); // Temporary folder for uploads
 
-// Get all addresses
-router.get("/all", getAllAddresses);
-
-// Get addresses by filters
-router.get("/filter", getAddressByFilters);
-router.get("/get-all-addresses-with-packages", getAllAddressesWithCategories);
-
-// Update an address by ID
-router.put("/update/:id", updateAddress);
-
-// Delete an address by ID
-router.delete("/delete/:id", deleteAddress);
-
-// Serve an image by state name and file name
-router.get("/image", getImage);
+// Routes with unique names
+router.post("/create-address", upload.array("images"), createAddress); // Create a new address
+router.get("/get-all-addresses", getAllAddresses); // Get all addresses
+router.get("/get-addresses-by-filters", getAddressByFilters); // Get addresses filtered by query
+router.get("/get-addresses-with-packages", getAllAddressesWithCategories); // Get addresses with associated packages
+router.put("/update-address/:addressId", upload.array("images"), updateAddress); // Update an address by ID
+router.delete("/delete-address/:addressId", deleteAddress); // Delete an address by ID
+router.get("/get-image", getImage); // Serve an image by state name and file name
 
 module.exports = router;

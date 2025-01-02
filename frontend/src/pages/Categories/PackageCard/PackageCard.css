@@ -1,62 +1,91 @@
+.package-card-image {
+  height: 200px;
+  background-size: cover;
+  cursor: pointer;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding: 10px;
+}
+
+.badge-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.advanced-badge,
+.popular-badge {
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+
+.advanced-badge {
+  background-color: #ff9800; /* Orange */
+}
+
+.popular-badge {
+  background-color: #4caf50; /* Green */
+}
+
 .package-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s, box-shadow 0.3s;
-    cursor: pointer;
-  }
-  
-  .package-card:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-  }
-  
-  .card-image-container {
-    position: relative;
-    width: 100%;
-    height: 200px;
-    overflow: hidden;
-  }
-  
-  .card-image {
-    width: 100%;
-    height: 100%;
-    background-color: #f7f7f7;
-  }
-  
-  .city-name-overlay {
-    position: absolute;
-    bottom: 10px;
-    left: 10px;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-  
-  .card-content {
-    padding: 15px;
-  }
-  
-  .package-name {
-    font-weight: bold;
-    font-size: 16px;
-    margin-bottom: 10px;
-    color: #333;
-  }
-  
-  .package-price,
-  .package-best-month {
-    font-size: 14px;
-    margin: 5px 0;
-    color: #666;
-  }
-  
-  .btn {
-    font-size: 14px;
-    padding: 5px 15px;
-    border-radius: 4px;
-  }
-  
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.package-card:hover {
+  transform: translateY(-5px);
+}
+
+.package-card-details {
+  padding: 15px;
+  text-align: left;
+}
+
+.package-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ef156c;
+}
+
+.package-summary {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 10px;  
+}
+
+.package-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #777;
+  margin-bottom: 10px;
+}
+
+.package-cta {
+  display: inline-block;
+  padding: 10px 15px;
+  background-color: #ef156c; /* Updated background color */
+  color: white;
+  text-decoration: none; /* Remove underline */
+  border-radius: 3px;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.package-cta:hover {
+  background-color: #c21252; /* Slightly darker for hover effect */
+}
+
+.package-card a {
+  text-decoration: none; /* Remove underline for all links inside package card */
+}

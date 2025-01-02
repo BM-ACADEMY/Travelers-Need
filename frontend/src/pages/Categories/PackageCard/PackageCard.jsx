@@ -1,49 +1,56 @@
-import React from 'react';
-import '../PackageCard/PackageCard.css'; // Add professional styles for cards
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import '../PackageCard/PackageCard.css';
 
-const PackageCard = ({ pkg, cityName }) => {
-  const navigate = useNavigate();
-  const packageImagePath = pkg.images?.[pkg.images.length - 1] || ''; // Use the last image in the array
+const PackageCard = ({ tourPlan }) => {
+  const {
+    title,
+    duration,
+    baseFare,
+    itSummaryTitle,
+    images = [],
+    itTourPlan,
+    itPopular
+  } = tourPlan;
 
-  // Normalize path separators and split the path
-  const normalizedPath = packageImagePath.replace(/\\/g, '/');
-  const pathParts = normalizedPath.split('/'); // Split path into parts
+  // Extract tourCode and fileName from the first image path
+  let tourCode = '';
+  let fileName = '';
+  if (images.length > 0) {
+    const parts = images[0].split('\\');
+    tourCode = parts[0] || '';
+    fileName = parts[1] || '';
+  }
 
-  // Extract the folder name (packageName) after "packages/"
-  const packageIndex = pathParts.findIndex((part) => part === 'packages');
-  const packageName = packageIndex !== -1 ? pathParts[packageIndex + 1] : '';
-  const fileName = pathParts.pop(); // Extract the file name
-
-  // Construct the package image URL
-  const packageImageURL = `http://localhost:3000/api/packages/get-package-image?packageName=${encodeURIComponent(
-    packageName
+  // Construct the image URL dynamically
+  const imageUrl = `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
+    tourCode
   )}&fileName=${encodeURIComponent(fileName)}`;
-  const handleClick = () => {
-    navigate(`/package/${pkg.packageId}`); // Navigate to PackagePage
-  };
+
   return (
-    <div className="package-card" onClick={handleClick} style={{ cursor: "pointer" }}>
-      <div className="card-image-container">
+    <Link className="" to={`/tour-plan/${tourCode}`} style={{ textDecoration: 'none' }}>
+      <div className="package-card">
         <div
-          className="card-image"
-          style={{
-            backgroundImage: `url(${packageImageURL})`,
-            backgroundPosition: 'center',
-            backgroundSize: 'cover',
-          }}
-        ></div>
-        <div className="city-name-overlay">
-          <span>{cityName}</span>
+          className="package-card-image"
+          style={{ backgroundImage: `url(${imageUrl})` }}
+        >
+          <div className="badge-container">
+            {itTourPlan === 'Y' && <span className="advanced-badge">Advanced</span>}
+            {itPopular === 'Y' && <span className="popular-badge">Popular</span>}
+          </div>
+        </div>
+        <div className="package-card-details">
+          <h3 className="package-title">{title}</h3>
+          <p className="package-summary">{itSummaryTitle}</p>
+          <div className="package-meta">
+            <span>{duration} Days</span>
+            <span>₹{baseFare}</span>
+          </div>
+          <Link className="package-cta" to={`/tour-plan/${tourCode}`}>
+            View Details
+          </Link>
         </div>
       </div>
-      <div className="card-content">
-        <h5 className="package-name">{pkg.name}</h5>
-        <p className="package-price">Price: ₹{pkg.price}</p>
-        <p className="package-best-month">Best Month: {pkg.bestMonth}</p>
-        <button className="btn btn-outline-primary mt-2">View Details</button>
-      </div>
-    </div>
+    </Link>
   );
 };
 

@@ -8,7 +8,7 @@ const Trending_category = ({ trendingData }) => {
 
   return (
     <div className="container mt-5">
-      <h2 className="text-center mb-4">TRENDING DESTINATIONS</h2>
+      <h4 className=" mb-4" style={{color :'rgba(40,41,65,1)'}}>TRENDING DESTINATIONS</h4>
       <div className="row">
         {Object.keys(trendingData).map((state, index) => {
           const stateDetails = trendingData[state]?.stateDetails || {};
@@ -31,7 +31,7 @@ const Trending_category = ({ trendingData }) => {
           const firstPackage = cityDetails[firstCity]?.[0]?.name || "No Packages";
 
           return (
-            <div key={index} className="col-md-4 mb-4">
+            <div key={index} className="col-md-4 col-lg-2 ">
               <StateCard
                 stateName={stateDetails.stateName || state}
                 stateImage={stateImageURL} // Use dynamically constructed URL

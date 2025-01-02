@@ -23,7 +23,7 @@ const WriteReview = () => {
     recommend: "",
     name: "",
     email: "",
-    orderId: "",
+    bookingId: "",
     userId: "675967cbf1c99091fbc0dd89", // Default userId = 1
     comments: "",
   });
@@ -70,7 +70,7 @@ const WriteReview = () => {
 
     try {
       const baseurl = import.meta.env.VITE_BASE_URL; // Replace with your base URL
-      await axios.post(`${baseurl}/reviews/`, formData);
+      await axios.post(`${baseurl}/reviews/create-review`, formData);
 
       setMessage("Review submitted successfully!");
       setError("");
@@ -79,7 +79,7 @@ const WriteReview = () => {
         recommend: "",
         name: "",
         email: "",
-        orderId: "",
+        bookingId: "",
         userId: "675967cbf1c99091fbc0dd89", // Reset to default userId
         comments: "",
       });
@@ -175,8 +175,8 @@ const WriteReview = () => {
           <Grid item xs={12}>
             <TextField
               label="Order ID"
-              name="orderId"
-              value={formData.orderId}
+              name="bookingId"
+              value={formData.bookingId}
               onChange={handleChange}
               fullWidth
               required

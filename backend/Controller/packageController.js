@@ -1,4 +1,4 @@
-const Package = require('../Models/packageModel');
+const Package = require('../Models/placeModel');
 const Theme = require('../Models/themesModel');
 const Address = require('../Models/addressModel'); 
 const express = require('express');
@@ -491,7 +491,91 @@ const getPackageById = async (req, res) => {
     res.status(500).json({ error: "Error retrieving package", details: error.message });
   }
 };
+const getPackageByIdWithFilter = async (req, res) => {
+  try {
+    const { packageId } = req.params;
+    const { type } = req.query;
 
+    // Find the package by ID and populate necessary fields
+    const package = await Package.findById(packageId)
+      .populate("addressId", "state city country description")
+      .populate("userId", "username email")
+      .populate("themeId", "name");
+
+    if (!package) {
+      return res.status(404).json({
+        message: "Package not found",
+        data: null,
+      });
+    }
+
+    // Filter data based on the requested type
+    let responseData = {};
+    switch (type) {
+      case "overview":
+        responseData = {
+          name: package.name,
+          theme: package.themeId?.name,
+          user: package.userId,
+          price: package.price,
+          tripDuration: package.tripDuration,
+          nearestCity: package.nearestCity,
+          peakSeason: package.peakSeason,
+          packageDescription: package.packageDescription,
+          networkSettings: package.networkSettings,
+          address: package.addressId,
+          inclusions: package.inclusions,
+          categories: package.categories,
+          images: package.images,
+        };
+        break;
+
+      case "top-places":
+        responseData = {
+          topPlaces: package.categories.includes("top destination")
+            ? package.categories
+            : [],
+        };
+        break;
+
+      case "best-places":
+        responseData = {
+          bestPlaces: package.categories.includes("trending")
+            ? package.categories
+            : [],
+        };
+        break;
+
+      case "best-time":
+        responseData = {
+          bestTimeToVisit: package.bestTimeToVisit,
+        };
+        break;
+
+      case "how-to-reach":
+        responseData = {
+          howToReach: package.howToReach,
+        };
+        break;
+
+      default:
+        return res.status(400).json({
+          message: "Invalid request type",
+          data: null,
+        });
+    }
+
+    res.status(200).json({
+      message: "Packages fetched successfully",
+      data: responseData,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error retrieving package",
+      details: error.message,
+    });
+  }
+};
 
 // **PUT**: Update a package
 const updatePackage = async (req, res) => {
@@ -634,7 +718,8 @@ module.exports = {
   updatePackage,
   deletePackage,
   getImage,
-  getTopDestinationPackagesGroupedByState
+  getTopDestinationPackagesGroupedByState,
+  getPackageByIdWithFilter
 };
 
 

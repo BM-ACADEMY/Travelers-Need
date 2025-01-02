@@ -1,271 +1,130 @@
-const Review = require('../Models/reviewModel');
-const Package=require('../Models/reviewModel');
-const Booking=require('../Models/bookingModel');
-const mongoose = require('mongoose');
-// **POST**: Create a new review
-const createReview = async (req, res) => {
+const Review = require("../Models/reviewModel");
+const Booking=require("../Models/bookingModel");
+const TourPlan=require("../Models/tourPlanModel");
+
+// 1. Create a new review
+exports.createReview = async (req, res) => {
   try {
-    const { tourRating, recommend, name, email, orderId, userId, comments } = req.body;
+    const { tourRating, recommend, name, email, userId, bookingId, comments } = req.body;
 
-    // Check for required fields
-    if (!tourRating || !name || !email || !orderId || !userId) {
-      return res.status(400).json({
-        error: 'Missing required fields',
-      });
-    }
-
-    // Create a new review
-    const newReview = await Review.create({
+    const newReview = new Review({
       tourRating,
       recommend,
       name,
       email,
-      orderId,
       userId,
+      bookingId,
       comments,
     });
 
-    res.status(201).json({
-      message: 'Review created successfully',
-      review: newReview,
-    });
+    await newReview.save();
+    res.status(201).json({ message: "Review created successfully", review: newReview });
   } catch (error) {
-    res.status(400).json({
-      error: 'Error creating review',
-      details: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **GET**: Retrieve all reviews
-const getAllReviews = async (req, res) => {
+// 2. Get all reviews
+exports.getAllReviews = async (req, res) => {
   try {
-    // Extract page and limit from query parameters
+    // Extract pagination parameters from the request query
     const page = parseInt(req.query.page) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit) || 10; // Default to 10 records per page
-    const skip = (page - 1) * limit; // Calculate the number of documents to skip
+    const limit = parseInt(req.query.limit) || 10; // Default to 10 reviews per page
+    const skip = (page - 1) * limit; // Calculate skip value
 
-    const reviews = await Review.aggregate([
-      // Match Booking collection based on orderId in Review
-      {
-        $lookup: {
-          from: "bookings", // Booking collection
-          localField: "orderId", // orderId in Review
-          foreignField: "_id", // _id in Booking
-          as: "bookingDetails",
-        },
-      },
-      {
-        $unwind: {
-          path: "$bookingDetails", // Unwind the bookingDetails array
-          preserveNullAndEmptyArrays: false, // Exclude reviews without matching bookings
-        },
-      },
-      // Match Package collection based on packageId in Booking
-      {
-        $lookup: {
-          from: "packages", // Package collection
-          localField: "bookingDetails.packageId", // packageId in Booking
-          foreignField: "_id", // _id in Package
-          as: "packageDetails",
-        },
-      },
-      {
-        $unwind: {
-          path: "$packageDetails", // Unwind the packageDetails array
-          preserveNullAndEmptyArrays: false, // Exclude bookings without matching packages
-        },
-      },
-      // Project the required fields only
-      {
-        $project: {
-          _id: 1, // Review ID
-          tourRating: 1,
-          recommend: 1,
-          name: 1,
-          email: 1,
-          comments: 1,
-          createdAt: 1, // Include review creation date for sorting or display
-          bookingDetails: {
-            _id: 1, // Booking ID
-            price: 1,
-            status: 1,
-            adultCount: 1,
-            childCount: 1,
-            date: 1,
-            username: 1,
-            email: 1,
-            phoneNumber: 1,
-          },
-          packageDetails: {
-            _id: 1, // Package ID
-            name: 1,
-            price: 1,
-            duration: 1,
-            packageDescription: 1,
-          },
-        },
-      },
-      { $skip: skip }, // Skip documents for pagination
-      { $limit: limit }, // Limit to the specified number of documents
-    ]);
+    // Fetch all reviews
+    const reviews = await Review.find()
+      .populate("userId", "name email") // Populate user details
+      .lean(); // Convert Mongoose documents to plain JavaScript objects
 
-    // Fetch total count for pagination metadata
-    const totalRecords = await Review.aggregate([
-      {
-        $lookup: {
-          from: "bookings",
-          localField: "orderId",
-          foreignField: "_id",
-          as: "bookingDetails",
-        },
-      },
-      {
-        $unwind: "$bookingDetails",
-      },
-      {
-        $lookup: {
-          from: "packages",
-          localField: "bookingDetails.packageId",
-          foreignField: "_id",
-          as: "packageDetails",
-        },
-      },
-      {
-        $unwind: "$packageDetails",
-      },
-      {
-        $count: "totalRecords",
-      },
-    ]);
+    // Fetch all bookings
+    const bookings = await Booking.find({}, { orderId: 1, packageId: 1 }).lean();
 
-    const totalRecordsCount = totalRecords.length > 0 ? totalRecords[0].totalRecords : 0;
-    const totalPages = Math.ceil(totalRecordsCount / limit);
+    // Fetch all tour plans
+    const tourPlans = await TourPlan.find({}, { _id: 1, title: 1 }).lean();
 
-    // Send paginated response
-    res.status(200).json({
-      page,
-      limit,
+    // Filter and map reviews
+    const filteredReviews = reviews.map((review) => {
+      const booking = bookings.find((b) => b.orderId === review.bookingId); // Match booking by orderId
+      if (!booking) return null; // Skip if no matching booking found
+
+      const tourPlan = tourPlans.find((tp) => tp._id.toString() === booking.packageId.toString()); // Match tour plan by packageId
+      if (!tourPlan) return null; // Skip if no matching tour plan found
+
+      return {
+        ...review,
+        tourPlan: { title: tourPlan.title }, // Include matched tour plan details
+      };
+    }).filter(Boolean); // Remove null values
+
+    // Pagination logic: slice the filtered reviews
+    const paginatedReviews = filteredReviews.slice(skip, skip + limit);
+
+    // Total pages calculation
+    const totalPages = Math.ceil(filteredReviews.length / limit);
+
+    // Return the paginated reviews
+    res.json({
+      message: "All reviews retrieved",
+      reviews: paginatedReviews,
+      currentPage: page,
       totalPages,
-      totalRecords: totalRecordsCount,
-      reviews,
+      totalReviews: filteredReviews.length,
     });
   } catch (error) {
-    res.status(500).json({
-      error: "Error retrieving reviews",
-      details: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **GET**: Retrieve a single review by ID
-const getReviewsByPackage = async (req, res) => {
+
+// 3. Get reviews for a specific package
+exports.getReviewsByPackageId = async (req, res) => {
   try {
     const { packageId } = req.params;
-console.log(packageId);
+    const reviews = await Review.find({ packageId })
+      .populate("userId", "name email")
+      .populate("packageId", "title");
 
-    // Validate packageId format
-    if (!mongoose.Types.ObjectId.isValid(packageId)) {
-      return res.status(400).json({ error: "Invalid packageId format" });
+    if (!reviews.length) {
+      return res.status(404).json({ message: "No reviews found for this package" });
     }
 
-    const packageObjectId = new mongoose.Types.ObjectId(packageId);
-
-    // Log packageObjectId for debugging
-    console.log("Package ObjectId:", packageObjectId);
-
-    // Step 1: Find bookings associated with the packageId
-    const bookings = await Booking.find({ packageId: packageObjectId }).select("_id");
-    console.log("Found Bookings:", bookings);
-
-    if (!bookings || bookings.length === 0) {
-      return res.send("No bookings found for this package");
-    }
-
-    // Step 2: Extract booking IDs for further filtering
-    const bookingIds = bookings.map((booking) => booking._id);
-
-    // Step 3: Find reviews where orderId matches the booking IDs
-    const reviews = await Review.find({ orderId: { $in: bookingIds } });
-    console.log("Found Reviews:", reviews);
-
-    if (!reviews || reviews.length === 0) {
-      return res.status(404).json({ error: "No reviews found for this package" });
-    }
-
-    res.status(200).json({
-      message: `Reviews for package ID: ${packageId}`,
-      reviews,
-    });
+    res.json({ message: "Reviews retrieved successfully", reviews });
   } catch (error) {
-    res.status(500).json({
-      error: "Error retrieving reviews",
-      details: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **PUT**: Update a review by ID
-const updateReview = async (req, res) => {
+// 4. Update a review by ID
+exports.updateReview = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { reviewId } = req.params;
+    const updatedData = req.body;
 
-    // Validate fields for update
-    if (req.body.tourRating && (req.body.tourRating < 1 || req.body.tourRating > 5)) {
-      return res.status(400).json({
-        error: 'Rating must be between 1 and 5',
-      });
-    }
-
-    const updatedReview = await Review.findByIdAndUpdate(
-      id,
-      req.body,
-      { new: true, runValidators: true } // Return updated document and validate fields
-    );
+    const updatedReview = await Review.findByIdAndUpdate(reviewId, updatedData, { new: true });
 
     if (!updatedReview) {
-      return res.status(404).json({ error: 'Review not found' });
+      return res.status(404).json({ message: "Review not found" });
     }
 
-    res.status(200).json({
-      message: 'Review updated successfully',
-      review: updatedReview,
-    });
+    res.json({ message: "Review updated successfully", review: updatedReview });
   } catch (error) {
-    res.status(400).json({
-      error: 'Error updating review',
-      details: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// **DELETE**: Delete a review by ID
-const deleteReview = async (req, res) => {
+// 5. Delete a review by ID
+exports.deleteReview = async (req, res) => {
   try {
-    const { id } = req.params;
-
-    const deletedReview = await Review.findByIdAndDelete(id);
+    const { reviewId } = req.params;
+    const deletedReview = await Review.findByIdAndDelete(reviewId);
 
     if (!deletedReview) {
-      return res.status(404).json({ error: 'Review not found' });
+      return res.status(404).json({ message: "Review not found" });
     }
 
-    res.status(200).json({
-      message: 'Review deleted successfully',
-      data: deletedReview,
-    });
+    res.json({ message: "Review deleted successfully" });
   } catch (error) {
-    res.status(500).json({
-      error: 'Error deleting review',
-      details: error.message,
-    });
+    res.status(500).json({ error: error.message });
   }
-};
-
-module.exports = {
-  createReview,
-  getAllReviews,
-  getReviewsByPackage,
-  updateReview,
-  deleteReview,
 };

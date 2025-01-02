@@ -1,39 +1,42 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
 import { useNavigate } from "react-router-dom";
 
 const Review = () => {
   const [reviews, setReviews] = useState([]); // State to store fetched reviews
   const [page, setPage] = useState(1); // Current page for pagination
   const [hasMore, setHasMore] = useState(true); // Track if there are more records to fetch
-  const prevRef = useRef(null);
-  const nextRef = useRef(null);
-  const swiperRef = useRef(null);
+  const [isFetching, setIsFetching] = useState(false); // Prevent multiple fetch calls
   const navigate = useNavigate();
 
   const baseurl = import.meta.env.VITE_BASE_URL; // Base URL for API
 
   // Fetch reviews from API
   const fetchReviews = async () => {
+    if (isFetching) return; // Prevent duplicate fetch calls
+    setIsFetching(true);
+
     try {
-      const response = await axios.get(`${baseurl}/reviews/getAllReviews`, {
-        params: { page, limit: 10 }, // Send page and limit as query parameters
+      const response = await axios.get(`${baseurl}/reviews/get-all-reviews`, {
+        params: { page, limit: 5 }, // Fetch 5 reviews per request
       });
       const fetchedReviews = response.data.reviews;
       const totalPages = response.data.totalPages;
 
-      // Append new reviews to existing state
-      setReviews((prevReviews) => [...prevReviews, ...fetchedReviews]);
+      setReviews((prevReviews) => {
+        // Filter out duplicate reviews based on _id
+        const newReviews = fetchedReviews.filter(
+          (review) => !prevReviews.some((prev) => prev._id === review._id)
+        );
+        return [...prevReviews, ...newReviews];
+      });
 
       // Check if there are more pages
       setHasMore(page < totalPages);
     } catch (error) {
       console.error("Error fetching reviews:", error.message);
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -42,14 +45,6 @@ const Review = () => {
     fetchReviews();
   }, [page]);
 
-  useEffect(() => {
-    if (swiperRef.current) {
-      swiperRef.current.navigation.init();
-      swiperRef.current.navigation.update();
-    }
-  }, []);
-
-  // Helper function to render stars dynamically
   const renderStars = (rating) => {
     const fullStar = "★";
     const emptyStar = "☆";
@@ -67,134 +62,72 @@ const Review = () => {
   };
 
   return (
-    <div className="container mt-5 review-carousel">
-      <div className="d-flex justify-content-center flex-column">
-        <h1 className="text-center text-dark mb-4">
-          Over 40 Lac+ Happy Travelers
-        </h1>
-        <p className="text-dark text-center">
-          Real travelers. Real stories. Real opinions to help you make the right
-          choice.
-        </p>
+    <div className="container mt-5">
+      <div className="text-center">
+        <h1 className="text-dark mb-4">694 Karnataka Tour Reviews</h1>
       </div>
-
-      {/* Custom Navigation Buttons */}
-      <div className="custom-navigation">
-        <button
-          ref={prevRef}
-          className="btn prev-button"
-          style={{ color: "#ef156c" }}
-        >
-          &#9664; {/* Left Arrow */}
-        </button>
-        <button
-          ref={nextRef}
-          className="btn next-button"
-          style={{ color: "#ef156c" }}
-        >
-          &#9654; {/* Right Arrow */}
-        </button>
-      </div>
-
-      {/* Swiper Slider */}
-      <Swiper
-        modules={[Navigation, Autoplay]}
-        onSwiper={(swiper) => {
-          swiperRef.current = swiper;
-          swiper.params.navigation.prevEl = prevRef.current;
-          swiper.params.navigation.nextEl = nextRef.current;
-        }}
-        autoplay={{
-          delay: 2000,
-          disableOnInteraction: false,
-        }}
-        slidesPerView={2}
-        spaceBetween={30}
-        pagination={false} // Disable bullet points
-        breakpoints={{
-          0: { slidesPerView: 1 },
-          768: { slidesPerView: 2 },
-        }}
-      >
+      <div>
         {reviews.map((review, index) => (
-          <SwiperSlide key={index}>
-            <div className="card p-3 shadow-sm">
-              <div className="d-flex justify-content-between mb-3">
-                {/* Avatar and Name */}
-                <div className="d-flex align-items-center">
-                  <div
-                    className="avatar me-3 text-white d-flex align-items-center justify-content-center rounded-circle"
-                    style={{
-                      width: "40px",
-                      height: "40px",
-                      backgroundColor: "#ef156c",
-                    }}
-                  >
-                    {review.name.charAt(0).toUpperCase()} {/* First letter of name */}
-                  </div>
-                  <div>
-                    <h5 className="mb-0">{review.name}</h5>
-                    <small className="text-muted">
-                      {review.bookingDetails.username}
-                    </small>
-                  </div>
+          <div key={index} className="card p-3 shadow-sm mb-4">
+            <div className="d-flex justify-content-between">
+              {/* User Info */}
+              <div className="d-flex align-items-center">
+                <div
+                  className="avatar me-3 text-white d-flex align-items-center justify-content-center rounded-circle"
+                  style={{
+                    width: "50px",
+                    height: "50px",
+                    backgroundColor: "#ef156c",
+                    fontSize: "20px",
+                  }}
+                >
+                  {review.name.charAt(0).toUpperCase()}
                 </div>
-                {/* Date */}
-                <div className="text-muted small">
-                  {new Date(review.bookingDetails.date).toLocaleDateString()}{" "}
-                  {/* Format Date */}
+                <div>
+                  <h5 className="mb-0">{review.name}</h5>
+                  <small className="text-muted">
+                    {/* {review.bookingDetails?.username || "Unknown Location"} */}
+                  </small>
                 </div>
               </div>
-              {/* Rating */}
-              <div className="rating mb-3 text-muted">
-                {renderStars(review.tourRating)} {/* Dynamic Rating */}
+              {/* Date */}
+              <div className="text-muted small">
+                {new Date(review?.createdAt).toLocaleDateString()}
               </div>
-              {/* Comments */}
-              <p className="fw-bold mb-2">{review.comments}</p>
-              {/* Package Details */}
-              <p>
-                <strong>Package:</strong>{" "}
-                {review.packageDetails.name}
-              </p>
-              <p>
-                <strong>Description:</strong>{" "}
-                {review.packageDetails.packageDescription}
-              </p>
-              <p>
-                <strong>Duration:</strong> {review.packageDetails.duration}
-              </p>
-              <small className="text-muted">
-                <strong>Price:</strong> ₹{review.packageDetails.price}
-              </small>
             </div>
-          </SwiperSlide>
+            {/* Rating */}
+            <div className="rating mb-3 text-muted">
+              {renderStars(review.tourRating)}
+            </div>
+            {/* Comments */}
+            <p className="fw-bold mb-2">{review.comments}</p>
+            {/* Package Details */}
+            <p>
+              <strong>Package:</strong> {review.tourPlan?.title || "N/A"}
+            </p>
+          </div>
         ))}
-      </Swiper>
-
-      {/* Read More and Write Review Buttons */}
+      </div>
       <div className="d-flex justify-content-center mt-4 gap-3">
         {hasMore && (
           <button
-            className="btn"
+            className="btn btn-outline-danger"
             onClick={handleReadMore}
             style={{
-              border: "2px solid #ef156c",
-              color: "#ef156c",
               textTransform: "none",
             }}
           >
-            Read More Reviews
+            Load More Reviews
           </button>
         )}
         <button
-          className="btn text-white"
+          className="btn btn-danger text-white"
           onClick={handleWriteReview}
           style={{
-            backgroundColor: "#ef156c",
             textTransform: "none",
           }}
         >
-          Write Review
+          Write a Review
         </button>
       </div>
     </div>
