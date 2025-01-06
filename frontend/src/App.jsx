@@ -13,13 +13,15 @@ import StatePage from "./pages/Categories/Statecard/StatePage";
 import ThemePage from "./pages/Categories/ThemeCard/ThemePage";
 import PackagePage from "./pages/Categories/PackageCard/PackagePage";
 import Top_destinations from "./pages/Destinations/Top_destinations";
-import PackageDetailsPage from "./pages/Destinations/packageDetailsPage";
+import PackageDetailsPage from "./pages/Destinations/PackageDetailsPage";
+import PlacePage from "./pages/Destinations/PlacePage";
+import ViewItinerariesPage from "./pages/Categories/PackageCard/ViewItinerariesPage";
 
 export default function App() {
   return (
    <UserProvider>
      <Router>
-      <Routes>
+      <Routes>  
         <Route path="/" element={<Layout />}>
           <Route path="/"  element={<Home />} />
           <Route path="/write-review" element={<WriteReview />} />
@@ -33,8 +35,10 @@ export default function App() {
           <Route path="/state/:stateName" element={<StatePage/>} />
           <Route path="/themes/:themename" element={<ThemePage />} />
           <Route exact path="/tour-plan/:tourCode" element={<PackagePage/>} />
-          <Route path="/top-destinations" element={<Top_destinations/>} />
-          <Route path="/package-details-page/:packageId" element={<PackageDetailsPage/>} />
+          <Route path="/destinations" element={<Top_destinations/>} />
+          <Route path="/details/:stateName/:cityName" element={<PackageDetailsPage />} />
+          <Route path="/place/:placeName" element={<PlacePage />} />
+          <Route path="/view-itineraries/:tourCode" element={<ViewItinerariesPage />} />
         </Route>
       </Routes>
     </Router>

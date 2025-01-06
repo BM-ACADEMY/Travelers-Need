@@ -18,11 +18,11 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
   const currentYear = new Date().getFullYear(); // Get the current year dynamically
 
   const handleCall = () => {
-    window.location.href = "tel:+91"; // Initiates a call
+    window.location.href = "tel:+919944940051"; // Initiates a call
   };
 
   const handleWhatsApp = () => {
-    const phoneNumber = "+91";
+    const phoneNumber = "+919944940051";
     window.open(`https://wa.me/${phoneNumber.replace("+", "")}`, "_blank"); // Redirects to WhatsApp chat
   };
 
@@ -33,7 +33,7 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
 
   return (
     <footer className="footer mt-5">
-      <div className="container py-5">
+      <div className="container-fluid py-5">
         <div className="row">
           {/* Explore Section */}
           <div className="col-md-3">
@@ -54,7 +54,7 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
                   Getaways
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link to="/cabs" className="footer-link">
                   Cabs
                 </Link>
@@ -63,7 +63,7 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
                 <Link to="/hotels" className="footer-link">
                   Hotels
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link to="/blog" className="footer-link">
                   Blog
@@ -92,7 +92,7 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
             <ul className="list-unstyled">
               {topPackages?.map((pkg, index) => (
                 <li key={index}>
-                  <Link to={`/packages/${pkg.toLowerCase()}`} className="footer-link">
+                  <Link to={`/state/${pkg.toLowerCase()}`} className="footer-link">
                     {pkg} Packages
                   </Link>
                 </li>
@@ -106,7 +106,7 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
             <ul className="list-unstyled">
               {internationalDestinations?.map((destination, index) => (
                 <li key={index}>
-                  <Link to={`/international/${destination.toLowerCase()}`} className="footer-link">
+                  <Link to={`/state/${destination.toLowerCase()}`} className="footer-link">
                     {destination}
                   </Link>
                 </li>

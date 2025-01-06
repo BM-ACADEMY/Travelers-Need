@@ -3,16 +3,16 @@ const fs = require("fs-extra");
 const path = require("path");
 const Booking = require("../Models/bookingModel");
 const Review = require("../Models/reviewModel");
+const Place = require("../Models/placeModel");
 const Address = require("../Models/addressModel");
 const UPLOADS_ROOT = path.join(__dirname, "..", "uploads", "tourPlans");
-
+const mongoose = require("mongoose");
 // Helper function: Create dynamic folder for a tour plan
 const createTourPlanFolder = async (tourCode) => {
   const folder = path.join(UPLOADS_ROOT, tourCode);
   await fs.ensureDir(folder);
   return folder;
 };
-
 // 1. Create a new tour plan
 exports.createTourPlan = async (req, res) => {
   try {
@@ -80,19 +80,15 @@ exports.createTourPlan = async (req, res) => {
     });
 
     await newTourPlan.save();
-    res
-      .status(201)
-      .json({
-        message: "Tour plan created successfully",
-        tourPlan: newTourPlan,
-      });
+    res.status(201).json({
+      message: "Tour plan created successfully",
+      tourPlan: newTourPlan,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 2. Get all tour plans
-
 exports.getAllTourPlans = async (req, res) => {
   try {
     // Step 1: Fetch all tour plans with necessary relationships populated
@@ -210,7 +206,263 @@ exports.getAllTourPlans = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+exports.getAllTourPlansForSearch = async (req, res) => {
+  try {
+    // Step 1: Fetch all tour plans with necessary relationships populated
+    const tourPlans = await TourPlan.find()
+      .populate(
+        "addressId",
+        "country state city images startingPrice description _id"
+      ) // Include _id
+      .populate("startPlace", "name description city state _id") // Include _id
+      .lean(); // Fetch as plain objects for better performance
 
+    // Step 2: Initialize the result structure for grouping
+    const startPlaces = [];
+    const destinations = [];
+    const durations = new Set(); // Use a Set to avoid duplicates
+
+    // Step 3: Process each tour plan
+    for (const plan of tourPlans) {
+      // Extract startPlace details
+      if (plan.startPlace) {
+        const startPlaceEntry = {
+          _id: plan.startPlace._id || null, // Include _id
+          name: plan.startPlace.name || plan.startPlace.city || "N/A",
+          city: plan.startPlace.city || "N/A",
+          state: plan.startPlace.state || "N/A",
+          description: plan.startPlace.description || "",
+        };
+
+        // Add to startPlaces if it doesn't already exist
+        if (
+          !startPlaces.some(
+            (place) => place._id === startPlaceEntry._id // Use _id for uniqueness
+          )
+        ) {
+          startPlaces.push(startPlaceEntry);
+        }
+      }
+
+      // Extract destination details from addressId
+      if (plan.addressId) {
+        const destinationEntry = {
+          _id: plan.addressId._id || null, // Include _id
+          name: plan.addressId.city || "N/A",
+          state: plan.addressId.state || "N/A",
+          country: plan.addressId.country || "N/A",
+          description: plan.addressId.description || "",
+          images: plan.addressId.images || [], // Include destination images if available
+          startingPrice: plan.addressId.startingPrice || 0, // Include starting price if available
+        };
+
+        // Add to destinations if it doesn't already exist
+        if (
+          !destinations.some(
+            (dest) => dest._id === destinationEntry._id // Use _id for uniqueness
+          )
+        ) {
+          destinations.push(destinationEntry);
+        }
+      }
+
+      // Extract duration and format it
+      if (plan.duration) {
+        const days = parseInt(plan.duration, 10); // Convert to number
+        const nights = days > 1 ? days - 1 : 0; // Calculate nights
+        const formattedDuration = `${days} Days / ${nights} Night${
+          nights > 1 ? "s" : ""
+        }`; // Format duration
+        durations.add(days); // Add to Set to avoid duplicates
+      }
+    }
+
+    // Convert Set to Array
+    const formattedDurations = Array.from(durations);
+
+    // Step 4: Return the grouped data
+    res.json({
+      message: "Grouped data fetched successfully",
+      startPlaces,
+      destinations,
+      durations: formattedDurations, // Return formatted durations
+    });
+  } catch (error) {
+    console.error("Error fetching tour plans:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+exports.getTourPlanByStateSearch = async (req, res) => {
+  try {
+    const { stateName } = req.params;
+
+    console.log("Fetching tour plans for state:", stateName);
+
+    // Step 1: Fetch all tour plans filtered by the given stateName
+    const tourPlans = await TourPlan.find()
+      .populate({
+        path: "addressId",
+        match: { state: new RegExp(`^${stateName}$`, "i") }, // Match stateName case-insensitively
+        select: "country state city images startingPrice description _id",
+      })
+      .populate("startPlace", "name description city state _id") // Include startPlace details
+      .lean(); // Fetch as plain objects for better performance
+
+    // Filter out tour plans where addressId does not match the stateName
+    const filteredPlans = tourPlans.filter((plan) => plan.addressId);
+
+    // Step 2: Initialize the result structure for grouping
+    const startPlaces = [];
+    const destinations = [];
+    const durations = new Set(); // Use a Set to avoid duplicates
+
+    // Step 3: Process each filtered tour plan
+    for (const plan of filteredPlans) {
+      // Extract startPlace details
+      if (plan.startPlace) {
+        const startPlaceEntry = {
+          _id: plan.startPlace._id || null,
+          name: plan.startPlace.name || plan.startPlace.city || "N/A",
+          city: plan.startPlace.city || "N/A",
+          state: plan.startPlace.state || "N/A",
+          description: plan.startPlace.description || "",
+        };
+
+        // Add to startPlaces if it doesn't already exist
+        if (!startPlaces.some((place) => place._id === startPlaceEntry._id)) {
+          startPlaces.push(startPlaceEntry);
+        }
+      }
+
+      // Extract destination details from addressId
+      if (plan.addressId) {
+        const destinationEntry = {
+          _id: plan.addressId._id || null,
+          name: plan.addressId.city || "N/A",
+          state: plan.addressId.state || "N/A",
+          country: plan.addressId.country || "N/A",
+          description: plan.addressId.description || "",
+          images: plan.addressId.images || [],
+          startingPrice: plan.addressId.startingPrice || 0,
+        };
+
+        // Add to destinations if it doesn't already exist
+        if (!destinations.some((dest) => dest._id === destinationEntry._id)) {
+          destinations.push(destinationEntry);
+        }
+      }
+
+      // Extract duration and format it
+      if (plan.duration) {
+        const days = parseInt(plan.duration, 10);
+        const nights = days > 1 ? days - 1 : 0;
+        const formattedDuration = `${days} Days / ${nights} Night${
+          nights > 1 ? "s" : ""
+        }`;
+        durations.add(days); // Add formatted duration
+      }
+    }
+
+    // Convert Set to Array
+    const formattedDurations = Array.from(durations);
+
+    // Step 4: Return the grouped data
+    res.json({
+      message: `Grouped data for state '${stateName}' fetched successfully`,
+      startPlaces,
+      destinations,
+      durations: formattedDurations,
+    });
+  } catch (error) {
+    console.error("Error fetching tour plans for state:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+exports.getTourPlansByState = async (req, res) => {
+  try {
+    const { stateName } = req.params;
+    const { from, duration } = req.query;
+
+    console.log("Fetching tour plans for state:", stateName, "with filters:", {
+      from,
+      duration,
+    });
+
+    // Find the address with the matching stateName
+    const address = await Address.findOne({
+      state: new RegExp(`^${stateName}$`, "i"),
+    }).select("country state city description images startingPrice");
+
+    if (!address) {
+      return res
+        .status(404)
+        .json({ message: "No address found for the given state" });
+    }
+
+    // Build the query object based on provided filters
+    const query = { addressId: address._id };
+
+    // Sanitize and validate 'from' parameter
+    const sanitizedFrom = from && from !== "null" ? from : null;
+    if (sanitizedFrom && mongoose.Types.ObjectId.isValid(sanitizedFrom)) {
+      query.startPlace = sanitizedFrom; // Add startPlace filter only if valid
+    }
+
+    // Sanitize and validate 'duration' parameter
+    const sanitizedDuration = duration && duration !== "null" ? duration : null;
+    if (sanitizedDuration) {
+      query.duration = sanitizedDuration; // Add duration filter if valid
+    }
+
+    // Fetch tour plans with optional filters
+    const tourPlans = await TourPlan.find(query)
+      .populate(
+        "addressId",
+        "country state city description images startingPrice"
+      )
+      .populate("startPlace", "name description")
+      .populate("endPlace", "name description")
+      .populate("themeId", "name description")
+      .lean(); // Fetch plain objects for easier manipulation
+
+    if (tourPlans.length === 0) {
+      return res.json({
+        message:
+          "No tour plans found for the given state with the provided filters",
+        address,
+      });
+    }
+
+    // Fetch reviews and review count for each tourPlan
+    for (const plan of tourPlans) {
+      const bookings = await Booking.find({ packageId: plan._id }).select(
+        "orderId"
+      );
+
+      const bookingIds = bookings.map((booking) => booking.orderId);
+
+      const reviews = await Review.find({ bookingId: { $in: bookingIds } });
+
+      plan.reviews = reviews.map((review) => ({
+        rating: review.rating,
+        comment: review.comment,
+        user: review.user, // Include any other fields you want
+      }));
+
+      plan.reviewCount = reviews.length;
+    }
+
+    // Return the tour plans with reviews and counts
+    res.json({
+      message: "Tour plans retrieved successfully",
+      address,
+      tourPlans,
+    });
+  } catch (error) {
+    console.error("Error fetching tour plans by state:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 // 3. Get a single tour plan by ID
 exports.getTourPlanById = async (req, res) => {
   try {
@@ -231,44 +483,6 @@ exports.getTourPlanById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-exports.getTourPlansByState = async (req, res) => {
-  try {
-    const { stateName } = req.params;
-    console.log("Fetching tour plans for state:", stateName); // Debugging log
-
-    // Find the address with only the fields you need
-    const address = await Address.findOne({
-      state: new RegExp(`^${stateName}$`, "i"),
-    }).select("country state city description images startingPrice");
-    if (!address) {
-      return res
-        .status(404)
-        .json({ message: "No address found for the given state" });
-    }
-
-    // Find tour plans for the matching addressId
-    const tourPlans = await TourPlan.find({ addressId: address._id })
-      .populate(
-        "addressId",
-        "country state city description images startingPrice"
-      ) // Include additional fields in the populated addressId
-      .populate("startPlace", "name description") // Limit populated startPlace fields
-      .populate("endPlace", "name description") // Limit populated endPlace fields
-      .populate("themeId", "name description"); // Limit populated themeId fields
-
-    if (tourPlans.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No tour plans found for the given state" });
-    }
-
-    res.json({ message: "Tour plans retrieved successfully", tourPlans });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: error.message });
-  }
-};
-
 exports.getTourPlanByTourCode = async (req, res) => {
   try {
     const { tourCode } = req.params;
@@ -308,7 +522,59 @@ exports.getTourPlanByTourCode = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+exports.getItineraryByTourCode = async (req, res) => {
+  try {
+    const { tourCode } = req.params;
 
+    // Find the tour plan by tour code
+    const tourPlan = await TourPlan.findOne({ tourCode })
+      .populate(
+        "addressId",
+        "country state city description images startingPrice"
+      ) // Populate address details
+      .populate("startPlace", "country state city") // Populate start place details
+      .populate("endPlace", "country state city") // Populate end place details
+      .populate("themeId", "name description") // Populate theme details
+      .populate({
+        path: "reviews",
+        populate: {
+          path: "userId",
+          select: "name email", // Populate user details
+        },
+        select: "tourRating recommend comments createdAt", // Select review fields
+      });
+
+    // Check if the tour plan exists
+    if (!tourPlan) {
+      return res.status(404).json({ message: "Tour plan not found" });
+    }
+
+    // Fetch details for places in the itinerary
+    const itineraryWithPlaceDetails = await Promise.all(
+      tourPlan.itinerary.map(async (dayPlan) => {
+        const placesDetails = await Place.find({
+          _id: { $in: dayPlan.places },
+        }).select("name description location images"); // Select desired fields
+
+        return {
+          ...dayPlan.toObject(), // Convert dayPlan to plain object
+          places: placesDetails, // Replace place IDs with their details
+        };
+      })
+    );
+
+    const result = {
+      ...tourPlan.toObject(),
+      itinerary: itineraryWithPlaceDetails, // Updated itinerary with place details
+      reviews: tourPlan.reviews || [], // Default to an empty array if `reviews` is undefined
+    };
+
+    res.json({ message: "Tour plan retrieved successfully", tourPlan: result });
+  } catch (error) {
+    console.error("Error fetching tour plan:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 // 4. Update a tour plan by ID
 exports.updateTourPlan = async (req, res) => {
   try {
@@ -375,7 +641,6 @@ exports.updateTourPlan = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 5. Delete a tour plan by ID
 exports.deleteTourPlan = async (req, res) => {
   try {
@@ -396,7 +661,6 @@ exports.deleteTourPlan = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 6. Serve an image
 exports.getTourPlanImage = async (req, res) => {
   try {

@@ -1,0 +1,39 @@
+.state-description-container {
+    max-height: 120px; /* Adjust to limit initial height */
+    overflow-y: hidden; /* Hide overflow initially */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    transition: max-height 0.3s ease;
+  }
+  
+  .state-description {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333;
+    display: -webkit-box;
+    -webkit-line-clamp: 5; /* Limit to 5 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .state-description.expanded {
+    -webkit-line-clamp: unset; /* Remove line clamp */
+    overflow-y: auto; /* Enable scrolling for long content */
+  }
+  
+  .read-more-toggle {
+    display: block;
+    margin: 10px 0;
+    font-size: 14px;
+    color: #ef156c;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .read-more-toggle:hover {
+    text-decoration: none;
+    color: #ef156c !important;
+  }
+  

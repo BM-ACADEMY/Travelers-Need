@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,12 +13,19 @@ import { useUser } from "../hooks/UserContext";
 import { Dialog, DialogTitle, DialogContent, IconButton } from "@mui/material";
 import Sign_in from "../pages/Sign_in";
 import Sign_up from "../pages/Sign_up";
+import axios from "axios";
 
 const Navbar = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [profile, setProfile] = useState(false);
   const [signInOpen, setSignInOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
+  const [domesticDestinations, setDomesticDestinations] = useState([]);
+  const [internationalDestinations, setInternationalDestinations] = useState(
+    []
+  );
+  const [error, setError] = useState(null);
+  const baseurl = import.meta.env.VITE_BASE_URL;
   // Handlers for modals
   const handleSignInOpen = () => {
     setSignUpOpen(false);
@@ -38,22 +45,27 @@ const Navbar = () => {
   const toggleProfile = () => setProfile((prevState) => !prevState);
 
   const { user, logout } = useUser();
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/address/get-all-addresses-tour-type"
+        );
+        const { domestic, international } = response.data.addresses;
 
-  const destinations = [
-    { country: "India", state: "Tamil Nadu", city: "Pondicherry" },
-    { country: "India", state: "Kerala", city: "Alleppey" },
-    { country: "India", state: "Himachal Pradesh", city: "Shimla" },
-    { country: "UAE", state: "Dubai", city: "Dubai" },
-    { country: "Singapore", state: "Central Singapore", city: "Singapore" },
-    { country: "France", state: "Ile-de-France", city: "Paris" },
-  ];
-  const domesticDestinations = destinations.filter(
-    (dest) => dest.country === "India"
-  );
-  const internationalDestinations = destinations.filter(
-    (dest) => dest.country !== "India"
-  );
+        setDomesticDestinations(domestic);
+        setInternationalDestinations(international);
+      } catch (err) {
+        console.error("Error fetching destinations:", err);
+        setError("Failed to load destinations. Please try again later.");
+      }
+    };
 
+    fetchDestinations();
+  }, []);
+  if (error) {
+    return <div className="text-danger text-center">{error}</div>;
+  }
   return (
     <nav
       className="navbar navbar-expand-lg navbar-light border-bottom"
@@ -70,7 +82,7 @@ const Navbar = () => {
             alt="Logo"
             style={{
               width: "155px",
-              height: "125px",
+              height: "110px",
               transition: "transform 0.3s ease",
             }}
             onMouseEnter={(e) =>
@@ -100,7 +112,7 @@ const Navbar = () => {
             <li className="nav-item">
               <Link
                 className="nav-link text-dark hover-underline"
-                to="/top-destinations"
+                to="/destinations"
               >
                 Destinations
               </Link>
@@ -134,61 +146,86 @@ const Navbar = () => {
                 aria-labelledby="toursDropdown"
                 style={{ minWidth: "250px" }}
               >
+                {/* Domestic Packages */}
                 <li>
-                  <h6 className="dropdown-header" style={{ color: "rgba(40, 41, 65, 1)" }}>
+                  <h6
+                    className="dropdown-header"
+                    style={{ color: "rgba(40, 41, 65, 1)" }}
+                  >
                     Domestic Packages
                   </h6>
                 </li>
-                {domesticDestinations.map((dest, index) => (
-                  <li key={index}>
-                    <Link
-                      className="dropdown-item"
-                      to={`/family-packages/domestic/${dest.state
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                    >
-                      {dest.state} - {dest.city}
-                    </Link>
+                {domesticDestinations.length > 0 ? (
+                  domesticDestinations.map((dest, index) => (
+                    <li key={index}>
+                      <Link
+                        className="dropdown-item hover-underline"
+                        to={`/state/${encodeURIComponent(dest.cityName)}`}
+                      >
+                        {dest.cityName} 
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-muted text-center">
+                    No domestic destinations available
                   </li>
-                ))}
+                )}
 
                 <li>
                   <hr className="dropdown-divider" />
                 </li>
 
+                {/* International Packages */}
                 <li>
-                  <h6 className="dropdown-header" style={{ color: "rgba(40, 41, 65, 1)" }}>
+                  <h6
+                    className="dropdown-header"
+                    style={{ color: "rgba(40, 41, 65, 1)" }}
+                  >
                     International Packages
                   </h6>
                 </li>
-                {internationalDestinations.map((dest, index) => (
-                  <li key={index}>
-                    <Link
-                      className="dropdown-item"
-                      to={`/family-packages/international/${dest.country
-                        .toLowerCase()
-                        .replace(/\s+/g, "-")}`}
-                    >
-                      {dest.country} - {dest.city}
-                    </Link>
+                {internationalDestinations.length > 0 ? (
+                  internationalDestinations.map((dest, index) => (
+                    <li key={index}>
+                      <Link
+                        className="dropdown-item hover-underline"
+                        to={`/state/${encodeURIComponent(dest.cityName)}`}
+                      >
+                        {dest.cityName} 
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-muted text-center">
+                    No international destinations available
                   </li>
-                ))}
+                )}
               </ul>
             </li>
 
             {/* Other Links */}
             <li className="nav-item">
-              <Link className="nav-link text-dark hover-underline" to="/holiday-packages">
+              <Link
+                className="nav-link text-dark hover-underline"
+                to="/holiday-packages"
+              >
                 Gateways
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link text-dark hover-underline" to="/holiday-deals">
+              <Link
+                className="nav-link text-dark hover-underline"
+                to="/holiday-deals"
+              >
                 Tour Plans
               </Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link text-dark hover-underline" to="/luxury-holidays">
+              <Link
+                className="nav-link text-dark hover-underline"
+                to="/luxury-holidays"
+              >
                 Blogs
               </Link>
             </li>
@@ -215,8 +252,8 @@ const Navbar = () => {
               >
                 {user ? (
                   <>
-                    <li>
-                      <Link className="dropdown-item" to="/profile">
+                    <li className="list-unstyled">
+                      <Link className="dropdown-item hover-underline" to="/profile">
                         My Profile
                       </Link>
                     </li>
@@ -225,7 +262,7 @@ const Navbar = () => {
                     </li>
                     <li>
                       <button
-                        className="dropdown-item text-danger d-flex align-items-center"
+                        className="dropdown-item text-danger d-flex align-items-center hover-underline"
                         onClick={logout}
                       >
                         <FontAwesomeIcon icon={faSignOutAlt} className="me-2" />
@@ -236,12 +273,18 @@ const Navbar = () => {
                 ) : (
                   <>
                     <li>
-                      <button className="dropdown-item" onClick={handleSignInOpen}>
+                      <button
+                        className="dropdown-item hover-underline "
+                        onClick={handleSignInOpen}
+                      >
                         Sign In
                       </button>
                     </li>
                     <li>
-                      <button className="dropdown-item" onClick={handleSignUpOpen}>
+                      <button
+                        className="dropdown-item hover-underline"
+                        onClick={handleSignUpOpen}
+                      >
                         Sign Up
                       </button>
                     </li>
@@ -254,7 +297,12 @@ const Navbar = () => {
       </div>
 
       {/* Sign In Modal */}
-      <Dialog open={signInOpen} onClose={handleSignInClose} maxWidth="md" fullWidth>
+      <Dialog
+        open={signInOpen}
+        onClose={handleSignInClose}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>
           <div className="d-flex justify-content-between align-items-center">
             <span>Sign In</span>
@@ -273,7 +321,12 @@ const Navbar = () => {
       </Dialog>
 
       {/* Sign Up Modal */}
-      <Dialog open={signUpOpen} onClose={handleSignUpClose} maxWidth="md" fullWidth>
+      <Dialog
+        open={signUpOpen}
+        onClose={handleSignUpClose}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle>
           <div className="d-flex justify-content-between align-items-center">
             <span>Sign Up</span>

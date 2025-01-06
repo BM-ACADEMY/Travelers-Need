@@ -2,35 +2,31 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSuitcase } from "@fortawesome/free-solid-svg-icons";
-import "../ThemeCard/ThemeCard.css"; // Import custom CSS for additional styling
+import "../ThemeCard/ThemeCard.css";
 
-const ThemeCard = ({ themeImage, themename, packageCount }) => {
+const ThemeCard = ({ icon, name, tourPlanCount }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/themes/${themename}`); // Navigate to ThemePage with themename as a param
+
+    navigate(`/themes/${name}`);
   };
 
   return (
     <div
-      className="card theme-card text-center shadow-sm overflow-hidden"
+      className="theme-card text-center shadow-sm"
       onClick={handleClick}
-      style={{ cursor: "pointer" }}
     >
-      <div className="position-relative">
-        <img
-          src={themeImage}
-          className="card-img-top theme-card-image"
-          alt={themename}
-        />
-        <div className="theme-card-overlay d-flex flex-column align-items-center justify-content-center">
-          <h5 className="text-white fw-bold">{themename}</h5>
-          <p className="text-white d-flex align-items-center gap-2">
-            <FontAwesomeIcon icon={faSuitcase} className="text-white" />
-            {packageCount} Packages
-          </p>
-          <button className="btn btn-light btn-sm mt-2">View Packages</button>
-        </div>
+      <div className="p-4">
+        <FontAwesomeIcon icon={icon} className="theme-card-icon mb-3" />
+        <h5 className="theme-card-title">{name}</h5>
+        <p className="theme-card-packages">
+          <FontAwesomeIcon icon={faSuitcase} className="me-2" />
+          {tourPlanCount} + Destinations
+        </p>
+      </div>
+      <div className="theme-card-overlay">
+        <p className="view-details">View Details</p>
       </div>
     </div>
   );

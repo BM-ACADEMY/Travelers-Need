@@ -2,22 +2,55 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../Destinations/Top_destinations.css";
 import { useNavigate } from "react-router-dom";
+
+// Helper function to construct image URL
+const constructImageURL = (imagePath) => {
+  const parts = imagePath?.split("\\");
+  let placeName = "";
+  let fileName = "";
+
+  if (parts?.length >= 2) {
+    placeName = parts[0];
+    fileName = parts[1];
+  } else {
+    console.warn("Unexpected image path format:", imagePath);
+  }
+
+  return `http://localhost:3000/api/places/get-image?placeName=${encodeURIComponent(
+    placeName
+  )}&fileName=${encodeURIComponent(fileName)}`;
+};
+
 const Top_destinations = () => {
-  const [data, setData] = useState({});
+  const [statePopularCities, setStatePopularCities] = useState([]);
+  const [countryPopularCities, setCountryPopularCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch data from the API
   useEffect(() => {
-    const fetchTopDestinations = async () => {
+    const fetchDestinations = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/packages/get-top-destinations-by-state"
+          "http://localhost:3000/api/places/get-all-popular-place"
         );
-        setData(response.data.data); // Set the grouped data
-        console.log(response.data.data, "top");
 
+        const { statePopularCities, countryPopularCities } = response.data;
+
+        const transformedCountryPopularCities = countryPopularCities.map((city) => ({
+          ...city,
+          imageURL: constructImageURL(city.images?.[0]),
+        }));
+
+        const transformedStatePopularCities = statePopularCities.map((city) => ({
+          ...city,
+          imageURL: constructImageURL(city.images?.[0]),
+        }));
+
+        setStatePopularCities(transformedStatePopularCities || []);
+        console.log(statePopularCities);
+        
+        setCountryPopularCities(transformedCountryPopularCities || []);
         setLoading(false);
       } catch (err) {
         setError(err.message);
@@ -25,13 +58,13 @@ const Top_destinations = () => {
       }
     };
 
-    fetchTopDestinations();
+    fetchDestinations();
   }, []);
 
-  const handleCardClick = (packageId) => {
-    navigate(`/package-details-page/${packageId}`);
+  const handleShowMore = (stateName) => {
+    navigate(`/state-popular-places/${stateName}`);
   };
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -42,100 +75,67 @@ const Top_destinations = () => {
 
   return (
     <div className="container mt-5">
-      <h2
-        className="text-center mb-4"
-        style={{
-          backgroundColor: "rgba(40, 41, 65, 1)", // Violet color with opacity
-          color: "white", // White text
-          padding: "10px 20px", // Padding for spacing
-          borderRadius: "8px", // Rounded edges for aesthetics
-          fontSize: "20px",
-        }}
-      >
-        Top Destinations
-      </h2>
-
-      {/* Loop through states */}
-      {Object.keys(data).map((stateName) => {
-        const stateData = data[stateName];
-        return (
-          <div key={stateName} className="mb-5">
-            {/* State Name */}
-            <h3 className="text-center text-uppercase mb-4">{stateName}</h3>
-
-            {/* Cities under the state */}
-            <div className="row">
-              {Object.keys(stateData.cities).map((cityName) => {
-                const cityPackages = stateData.cities[cityName];
-
-                return cityPackages.map((pkg) => {
-                  const packageImageURLs = pkg.images.map((imagePath) => {
-                    const normalizedPath = imagePath.replace(/\\/g, "/");
-                    const pathParts = normalizedPath.split("/");
-                    const packageIndex = pathParts.findIndex(
-                      (part) => part === "packages"
-                    );
-                    const packageName =
-                      packageIndex !== -1 ? pathParts[packageIndex + 1] : "";
-                    const fileName = pathParts.pop();
-
-                    return `http://localhost:3000/api/packages/get-package-image?packageName=${encodeURIComponent(
-                      packageName
-                    )}&fileName=${encodeURIComponent(fileName)}`;
-                  });
-
-                  const lastImageURL =
-                    packageImageURLs[packageImageURLs.length - 1];
-
-                  return (
-                    <div
-                      key={pkg.packageId}
-                      className="col-lg-4 col-md-6 col-sm-12 mb-4"
-                      onClick={() => handleCardClick(pkg.packageId)} // Pass packageId to the function
-                      style={{ cursor: "pointer" }}
-                    >
-                      <div className="destination-card position-relative">
-                        {/* Package Image */}
-                        <img
-                          src={lastImageURL}
-                          alt={cityName}
-                          className="img-fluid rounded"
-                          style={{
-                            width: "100%",
-                            height: "300px",
-                            objectFit: "cover",
-                          }}
-                        />
-
-                        {/* Default Package Name */}
-                        <div className="package-name position-absolute bottom-0 start-0 p-2 bg-dark text-white w-100 text-center">
-                          {cityName}
-                        </div>
-
-                        {/* Hover Overlay */}
-                        <div
-                          className="destination-overlay position-absolute w-100 h-100 d-flex align-items-center justify-content-center"
-                          style={{
-                            backgroundColor: "rgba(0, 0, 0, 0.6)",
-                            opacity: 0,
-                            transition: "opacity 0.3s ease",
-                            top: 0,
-                            left: 0,
-                          }}
-                        >
-                          <h4 className="text-white text-center">
-                            View Details
-                          </h4>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                });
-              })}
+      {/* Most Popular Destinations in India */}
+      <h4 className="section-title">Most Popular Destinations in India</h4>
+      <div className="grid-container">
+        {countryPopularCities.slice(0, 5).map((place) => (
+          <div
+            key={place._id}
+            className="grid-item"
+            onClick={() => navigate(`/details/${place?.state?.state}/${place.state.city}`)}
+          >
+            <div className="destination-card">
+              <img
+                src={place.imageURL}
+                alt={place.name}
+                className="img-fluid rounded"
+              />
+              <div className="place-name">{place.name}</div>
             </div>
           </div>
-        );
-      })}
+        ))}
+      </div>
+      <div className="text-center mt-3">
+        <button
+          className="btn"
+          onClick={() => navigate("/all-popular-places")}
+          style={{backgroundColor:"#ef156c",color:"white"}}
+        >
+          Show More Places
+        </button>
+      </div>
+
+      {/* Top Destinations by State */}
+      {/* <h2 className="section-title mt-5">Top Destinations by State</h2> */}
+      {statePopularCities.map((state) => (
+        <div key={state.state._id} className="mb-5">
+          <h4 className="section-title">Top Destinations in {state.state?.state || "Unknown State"}</h4>
+          <div className="grid-container">
+            <div
+              className="grid-item"
+              onClick={() => navigate(`/details/${state?.state?.state}/${state?.state?.city}`)}
+            >
+              <div className="destination-card">
+                <img
+                  src={state.imageURL}
+                  alt={state.name}
+                  className="img-fluid rounded"
+                />
+                <div className="place-name">{state.name}</div>
+              </div>
+            </div>
+          </div>
+          <div className="text-center mt-3">
+            <button
+              className="btn "
+              style={{backgroundColor:"#ef156c",color:"white"}}
+              onClick={() => handleShowMore(state.state?.state)}
+            >
+              Show More Places in {state.state?.state}
+            </button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

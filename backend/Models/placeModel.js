@@ -32,7 +32,6 @@ const placeSchema = new mongoose.Schema(
   {
     name: { type: String, required: true }, // Name of the place
     description: { type: String }, // Description of the place
-
     type: {
       type: String,
       enum: ["city", "sub_place"], // Differentiates between city, main place, and sub-place
@@ -51,7 +50,6 @@ const placeSchema = new mongoose.Schema(
     },
     bestTimetoVisit:{type:String},
     idealTripDuration:{type:String,required:true},
-   
     transport: [transportSchema], // Embedded Transport Schema
     networkSettings: networkSettingsSchema, // Embedded Network Settings
     weatherInfo: weatherInfoSchema, // Embedded Weather Info
@@ -60,7 +58,10 @@ const placeSchema = new mongoose.Schema(
     placeLocation:{type:String},
     travelTipes:{type:String},
     transportOption:{type:String},
-    mustVisit:{type:String}
+    mustVisit:{type:String},
+    placePopular:{type:String,enum:["Y","N"],default:["N"]},
+    placeTop:{type:String,enum:["Y","N"],default:["N"]},
+    mostPopular:{type:String,enum:["Y","N"],default:["N"]}
   },
   { timestamps: true }
 );

@@ -1,6 +1,7 @@
 const Address = require("../Models/addressModel");
 const fs = require("fs-extra");
 const path = require("path");
+const TourPlan = require("../Models/tourPlanModel");
 
 const UPLOADS_ROOT = path.join(__dirname, "..", "uploads", "addresses");
 
@@ -86,6 +87,58 @@ exports.getAllAddresses = async (req, res) => {
   }
 };
 
+
+exports.getAllAddressesForTourType = async (req, res) => {
+  try {
+    // Fetch all addresses
+    const addresses = await Address.find();
+    console.log(`Fetched addresses:`, addresses);
+
+    // Initialize containers for grouping
+    const domesticAddresses = [];
+    const internationalAddresses = [];
+
+    for (const address of addresses) {
+      if (address.city && address.coordinates && address.startingPrice) {
+        // Check if the address is linked to a domestic or international tour plan
+        const linkedTourPlans = await TourPlan.find({ addressId: address._id });
+
+        // Determine if the address is domestic or international
+        const isDomestic = linkedTourPlans.some(plan => plan.tourType === "D");
+        const isInternational = linkedTourPlans.some(plan => plan.tourType === "I");
+
+        const transformedAddress = {
+          cityName: address.state,
+          coordinates: address.coordinates.map(coord => parseFloat(coord)),
+          startingPrice: address.startingPrice,
+        };
+
+        if (isDomestic) {
+          domesticAddresses.push(transformedAddress);
+        }
+        if (isInternational) {
+          internationalAddresses.push(transformedAddress);
+        }
+      } else {
+        console.log("Skipping record due to missing fields:", address);
+      }
+    }
+
+    // Combine results into categories
+    const groupedAddresses = {
+      domestic: domesticAddresses,
+      international: internationalAddresses,
+    };
+
+    res.json({
+      message: "Addresses grouped by state and category retrieved successfully",
+      addresses: groupedAddresses,
+    });
+  } catch (error) {
+    console.error("Error fetching addresses:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
 // 3. Get addresses by filters
 exports.getAddressByFilters = async (req, res) => {

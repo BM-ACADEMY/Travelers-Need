@@ -10,7 +10,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
 import "../Home/Home.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Autoplay } from "swiper/modules";
@@ -49,9 +48,12 @@ const Home = () => {
   const swiperRef = useRef(null);
   const prevRef = useRef(null);
   const nextRef = useRef(null);
+  const [startPlaces, setStartPlaces] = useState([]);
+  const [destinations, setDestinations] = useState([]);
+  const [durations, setDurations] = useState([]);
+  const [startPlace, setStartPlace] = useState("");
   const [destination, setDestination] = useState("");
   const [duration, setDuration] = useState("");
-  const [month, setMonth] = useState("");
   useEffect(() => {
     if (swiperRef.current) {
       swiperRef.current.params.navigation.prevEl = prevRef.current;
@@ -60,7 +62,46 @@ const Home = () => {
       swiperRef.current.navigation.update();
     }
   }, []);
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search"
+        );
+        const { startPlaces, destinations, durations } = response.data;
 
+        setStartPlaces(
+          startPlaces.map((place) => ({ id: place._id, name: place.name }))
+        );
+        setDestinations(
+          destinations.map((dest) => ({ id: dest._id, name: dest.name }))
+        );
+        setDurations(
+          durations.map(
+            (dur) => `${dur} Days / ${dur - 1} Night${dur > 2 ? "s" : ""}`
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching initial data:", error);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+  const handleSearch = () => {
+    const days = parseInt(duration.split(" ")[0], 10);
+
+    console.log("Search triggered with:", {
+      startPlace,
+      destination,
+      duration: days,
+    });
+    navigate(
+      `state/${encodeURIComponent(
+        destination
+      )}?from=${startPlace}&duration=${days}`
+    );
+  };
   const fetchReviews = async () => {
     try {
       const response = await axios.get(`${baseurl}/reviews/get-all-reviews`, {
@@ -82,10 +123,7 @@ const Home = () => {
       const response = await axios.get(
         `${baseurl}/tour-plans/get-all-tour-plans`
       );
-
-      const { data, trendingCategories } = response.data; // Destructure response data
-
-      // Update state based on response
+      const { data, trendingCategories } = response.data;
       if (data) {
         setTrendingData(trendingCategories || []); // Trending categories data
         const categoryMap = data.reduce((acc, category) => {
@@ -108,7 +146,9 @@ const Home = () => {
 
   const fetchThemes = async () => {
     try {
-      const response = await axios.get(`${baseurl}/themes/get-all-themes`);
+      const response = await axios.get(
+        `${baseurl}/themes/get-all-themes-by-tour-plan`
+      );
       const { data } = response.data;
       console.log(data);
 
@@ -161,129 +201,137 @@ const Home = () => {
   return (
     <div className="app-container">
       <div className="container-fluid hero-section d-flex flex-column position-relative">
-        <div className="row align-items-center justify-content-center">
-          {/* Left Image */}
-          <div className="col-lg-3 d-none d-lg-block">
-            <img
-              src={leftImage}
-              alt="Left Illustration"
-              className="img-fluid"
-            />
-          </div>
+        <div className="container-fluid">
+          <div className="d-flex align-items-center justify-content-between">
+            {/* Left Image */}
+            <div
+              className="d-none d-lg-block"
+              style={{ flex: "1", textAlign: "left" }}
+            >
+              <img
+                src={leftImage}
+                alt="Left Illustration"
+                className="img-fluid"
+                style={{ maxWidth: "100%" }}
+              />
+            </div>
 
-          {/* Main Content */}
-          <div className="col-12 col-lg-6 text-center">
-            <h1 className="fw-bold mb-3">
-              Customize & Book Amazing Holiday Packages
-            </h1>
-            <p className="text-muted mb-4">
-              650+ Travel Agents serving 65+ Destinations worldwide
-            </p>
+            {/* Main Content */}
+            <div
+              className="d-flex flex-column align-items-center justify-content-center text-center"
+              style={{ flex: "3" }}
+            >
+              <h1 className="fw-bold mb-3">
+                Customize & Book Amazing Holiday Packages
+              </h1>
+              <p className="text-muted mb-4">
+                650+ Travel Agents serving 65+ Destinations worldwide
+              </p>
 
-            {/* Dropdown Fields */}
-            <div className="row g-3">
-              {/* Destination Field */}
-              <div className="col-12 col-md-6 col-lg-3 d-flex align-items-center">
-                <FontAwesomeIcon
-                  icon={faMapMarkerAlt}
-                  className="me-2"
-                  style={{ color: "#ef156c" }}
-                />
-                <select
-                  className="form-select"
-                  style={{
-                    fontSize: "14px",
-                  }}
-                  value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Destination
-                  </option>
-                  {destinations.map((dest, index) => (
-                    <option key={index} value={dest}>
-                      {dest}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Duration Field */}
-              <div className="col-12 col-md-6 col-lg-3 d-flex align-items-center">
-                <FontAwesomeIcon
-                  icon={faClock}
-                  className="me-2"
-                  style={{ color: "#ef156c" }}
-                />
-                <select
-                  className="form-select"
-                  style={{
-                    fontSize: "14px", // Decrease the size of the entire dropdown text
-                  }}
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Duration
-                  </option>
-                  {durations.map((dur, index) => (
-                    <option key={index} value={dur}>
-                      {dur}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Month Field */}
-              <div className="col-12 col-md-6 col-lg-3 d-flex align-items-center">
-                <FontAwesomeIcon
-                  icon={faCalendarAlt}
-                  className="me-2"
-                  style={{ color: "#ef156c" }}
-                />
-                <select
-                  className="form-select"
-                  value={month}
-                  style={{
-                    fontSize: "14px", // Decrease the size of the entire dropdown text
-                  }}
-                  onChange={(e) => setMonth(e.target.value)}
-                >
-                  <option value="" disabled>
-                    Select Month
-                  </option>
-                  {months.map((m, index) => (
-                    <option key={index} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Explore Button */}
-              <div className="col-12 col-md-6 col-lg-3">
-                <button
-                  className="btn    w-100 d-flex align-items-center text-white justify-content-center"
-                  style={{ backgroundColor: "#ef156c" }}
-                >
+              {/* Dropdown Fields */}
+              <div className="row g-6">
+                {/* Start Place Field */}
+                <div className="col-12 col-md-4 col-lg-3  d-flex align-items-center">
                   <FontAwesomeIcon
-                    icon={faSearch}
+                    icon={faMapMarkerAlt}
                     className="me-2"
-                    style={{ color: "white" }}
+                    style={{ color: "#ef156c" }}
                   />
-                  Explore
-                </button>
+                  <select
+                    className="form-select"
+                    style={{ fontSize: "14px" }}
+                    value={startPlace}
+                    onChange={(e) => setStartPlace(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Start Place
+                    </option>
+                    {startPlaces.map((place) => (
+                      <option key={place.id} value={place.id}>
+                        {place.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Destination Field */}
+                <div className="col-12 col-md-4 col-lg-3  d-flex align-items-center">
+                  <FontAwesomeIcon
+                    icon={faMapMarkerAlt}
+                    className="me-2"
+                    style={{ color: "#ef156c" }}
+                  />
+                  <select
+                    className="form-select"
+                    style={{ fontSize: "14px" }}
+                    value={destination}
+                    onChange={(e) => setDestination(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Destination
+                    </option>
+                    {destinations.map((dest) => (
+                      <option key={dest.id} value={dest.name}>
+                        {dest.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Duration Field */}
+                <div className="col-12 col-md-4 col-lg-3  d-flex align-items-center">
+                  <FontAwesomeIcon
+                    icon={faClock}
+                    className="me-2"
+                    style={{ color: "#ef156c" }}
+                  />
+                  <select
+                    className="form-select"
+                    style={{ fontSize: "14px" }}
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                  >
+                    <option value="" disabled>
+                      Duration
+                    </option>
+                    {durations.map((dur, index) => (
+                      <option key={index} value={dur}>
+                        {dur}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Search Button */}
+                <div className="col-lg-3">
+                  <button
+                    className="btn w-100 d-flex align-items-center text-white justify-content-center"
+                    style={{ backgroundColor: "#ef156c" }}
+                    onClick={handleSearch}
+                  >
+                    <FontAwesomeIcon
+                      icon={faSearch}
+                      className="me-2"
+                      style={{ color: "white" }}
+                    />
+                    Search
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Right Image */}
-          <div className="col-lg-3 d-none d-lg-block">
-            <img
-              src={rightImage}
-              alt="Right Illustration"
-              className="img-fluid"
-            />
+            {/* Right Image */}
+            <div
+              className="d-none d-lg-block"
+              style={{ flex: "1", textAlign: "right" }}
+            >
+              <img
+                src={rightImage}
+                alt="Right Illustration"
+                className="img-fluid"
+                style={{ maxWidth: "100%" }}
+              />
+            </div>
           </div>
         </div>
 

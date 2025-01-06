@@ -64,7 +64,7 @@ const Review = () => {
   return (
     <div className="container mt-5">
       <div className="text-center">
-        <h1 className="text-dark mb-4">694 Karnataka Tour Reviews</h1>
+        {/* <h1 className="text-dark mb-4">694 Karnataka Tour Reviews</h1> */}
       </div>
       <div>
         {reviews.map((review, index) => (

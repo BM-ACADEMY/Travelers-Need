@@ -29,7 +29,6 @@ const tourPlanSchema = new mongoose.Schema({
   exclusions: [{ type: String }],
   optional: [{ type: String }],
   themeId: [{ type: mongoose.Schema.Types.ObjectId, ref: "Theme"}],
-  // reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
   images: {
     type: [String], // Array of image URLs or file paths
     default: [],
@@ -38,10 +37,7 @@ const tourPlanSchema = new mongoose.Schema({
       message: "One or more image paths are invalid",
     },
   },
-  // operator: {
-  //   name: { type: String, required: true },
-  //   city: { type: String, required: true },
-  // },
+ 
 }, { timestamps: true });
 
 module.exports = mongoose.model("TourPlan", tourPlanSchema);

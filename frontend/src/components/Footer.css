@@ -6,7 +6,9 @@
   .footer h5 {
     color: #343a40;
   }
-  
+  .row{
+    gap: 0 !important;
+  }
   .footer ul {
     padding: 0;
     list-style: none;

@@ -20,14 +20,15 @@ const PackageCard = ({ tourPlan }) => {
     tourCode = parts[0] || '';
     fileName = parts[1] || '';
   }
-
+  const lowerCaseTourCode = tourCode.toLowerCase();
   // Construct the image URL dynamically
   const imageUrl = `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
     tourCode
   )}&fileName=${encodeURIComponent(fileName)}`;
 
   return (
-    <Link className="" to={`/tour-plan/${tourCode}`} style={{ textDecoration: 'none' }}>
+    <Link className="" to={`/tour-plan/${lowerCaseTourCode}`} style={{ textDecoration: 'none' }}>
+      
       <div className="package-card">
         <div
           className="package-card-image"

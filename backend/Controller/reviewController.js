@@ -23,7 +23,6 @@ exports.createReview = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 2. Get all reviews
 exports.getAllReviews = async (req, res) => {
   try {
@@ -75,8 +74,6 @@ exports.getAllReviews = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-
 // 3. Get reviews for a specific package
 exports.getReviewsByPackageId = async (req, res) => {
   try {
@@ -94,7 +91,6 @@ exports.getReviewsByPackageId = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 4. Update a review by ID
 exports.updateReview = async (req, res) => {
   try {
@@ -112,7 +108,6 @@ exports.updateReview = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 5. Delete a review by ID
 exports.deleteReview = async (req, res) => {
   try {

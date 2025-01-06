@@ -5,8 +5,7 @@
     top: 60px; /* Adjust based on your navbar height */
     z-index: 9999; /* Ensure it's on top of other elements */
   }
-  
-  /* Optional: If you want the dropdown to show on hover instead of click on large screens */
+
   @media (min-width: 992px) {
     .nav-item.dropdown:hover .mega-dropdown {
       display: block;

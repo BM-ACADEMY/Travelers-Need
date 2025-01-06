@@ -87,3 +87,8 @@
     background: #f0f0f0; /* Scrollbar track color */
   }
   
+  .img-fluid {
+    max-width: 100%;
+    height: auto;
+  }
+  

@@ -9,6 +9,7 @@ const {
   deleteAddress,
   getImage,
   getAllAddressesWithCategories,
+  getAllAddressesForTourType
 } = require("../Controller/addressController");
 
 const router = express.Router();
@@ -19,6 +20,7 @@ const upload = multer({ dest: path.join(__dirname, "..", "temp") }); // Temporar
 // Routes with unique names
 router.post("/create-address", upload.array("images"), createAddress); // Create a new address
 router.get("/get-all-addresses", getAllAddresses); // Get all addresses
+router.get("/get-all-addresses-tour-type", getAllAddressesForTourType); // Get all addresses
 router.get("/get-addresses-by-filters", getAddressByFilters); // Get addresses filtered by query
 router.get("/get-addresses-with-packages", getAllAddressesWithCategories); // Get addresses with associated packages
 router.put("/update-address/:addressId", upload.array("images"), updateAddress); // Update an address by ID

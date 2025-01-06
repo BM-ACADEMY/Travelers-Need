@@ -186,4 +186,36 @@
   color: #ef156c !important;
 }
 
+.header-overlay {
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%; 
+  align-items: center;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 10px;
+}
+.tour-plan-count {
+  font-size: 18px;
+  /* margin-bottom: 10px; */
+  color: white;
 
+}
+
+.state-name {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #ef156c;
+}
+
+.starting-price {
+  font-size: 1.2rem;
+  margin: 0;
+  color: white;
+
+}

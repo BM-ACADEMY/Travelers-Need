@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useUser } from "../../../hooks/UserContext";
 import "../PackageCard/PackagePage.css";
 import {
@@ -47,6 +47,7 @@ const PackagePage = () => {
     adults: 1,
     children: 0,
     date: "",
+    price: 0,
     travelerName: "",
     email: "",
     phone: "",
@@ -72,10 +73,8 @@ const PackagePage = () => {
   const itineraryRef = useRef(null);
   const inclusionsRef = useRef(null);
   const bookingPolicyRef = useRef(null);
-  const isDateValid = (date) => {
-    const today = new Date().toISOString().split("T")[0];
-    return date >= today;
-  };
+  const navigate = useNavigate();
+  const upperCaseTourCode = tourCode.toUpperCase();
   const scrollToSection = (ref) => {
     if (ref.current) {
       ref.current.scrollIntoView({ behavior: "smooth" });
@@ -86,7 +85,7 @@ const PackagePage = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/tour-plans/tour-plans/tour-code/${tourCode}`
+          `http://localhost:3000/api/tour-plans/tour-plans/tour-code/${upperCaseTourCode}`
         );
 
         setPackageDetails(response.data.tourPlan); // Assuming the response contains `tourPlan` key
@@ -157,17 +156,22 @@ const PackagePage = () => {
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1);
   };
+  useEffect(() => {
+    const totalPrice =
+      formData.adults * (packageDetails?.baseFare || 0) +
+      formData.children * ((packageDetails?.baseFare || 0) * 0.5);
+    setFormData((prev) => ({ ...prev, price: totalPrice }));
+  }, [formData.adults, formData.children, packageDetails?.baseFare]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevFormData) => ({ ...prevFormData, [name]: value }));
-  };
 
-  const calculateTotal = () => {
-    return (
-      formData.adults * packageDetails?.baseFare +
-      formData.children * (packageDetails?.baseFare * 0.5)
-    );
+    // Update the formData for the specific field
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]:
+        name === "adults" || name === "children" ? parseInt(value) || 0 : value, // Ensure adults/children are numbers
+    }));
   };
 
   const handleConfirmBooking = async () => {
@@ -186,7 +190,7 @@ const PackagePage = () => {
     const bookingData = {
       userId: user.userId, // Assuming user context provides `id`
       packageId: packageDetails._id,
-      price: calculateTotal(), // Function to calculate price
+      price: formData.price, // Function to calculate price
       status: "Confirmed",
       adultCount: formData.adults,
       childCount: formData.children,
@@ -218,8 +222,6 @@ const PackagePage = () => {
 
   const handlePaymentSubmit = async () => {
     try {
-      // console.log(orderId);
-
       const paymentData = {
         bookingId: bookingId,
         userId: user.userId,
@@ -238,6 +240,9 @@ const PackagePage = () => {
     } catch (error) {
       console.error("Error processing payment: ", error);
     }
+  };
+  const handleViewItinerary = () => {
+    navigate(`/view-itineraries/${tourCode}`);
   };
 
   const steps = ["Select Location", "Select Date", "Confirm Details"];
@@ -557,6 +562,17 @@ const PackagePage = () => {
               </ul>
             </div>
           ))}
+          <button
+            className="btn"
+            style={{
+              backgroundColor: "#ef156c",
+              color: "white",
+              minWidth: "150px",
+            }}
+            onClick={handleViewItinerary}
+          >
+            View Complete Itinerary
+          </button>
         </div>
 
         {/* Combined Details Section */}
@@ -664,8 +680,18 @@ const PackagePage = () => {
                       min: new Date().toISOString().split("T")[0], // Set minimum date to today
                     }}
                   />
+                  <TextField
+                    fullWidth
+                    label="Total Price"
+                    type="number"
+                    name="price"
+                    value={formData.price} // Display calculated price
+                    onChange={handleChange} // Allow manual input
+                    className="mb-3"
+                  />
 
-                  <h5>Total Price: ₹{calculateTotal()}</h5>
+                  {/* Display total price */}
+                  <h5>Total Price: ₹{formData.price}</h5>
                 </div>
               )}
 
