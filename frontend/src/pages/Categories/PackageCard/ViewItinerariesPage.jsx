@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "./ViewItinerariesPage.css";
+import ReviewForState from "../../Reviews/ReviewForState";
+import ReusableModal from "../../model/ReusableModel";
+import QuoteForm from "../../model/QuoteForm";
 const constructImageURL = (imagePath) => {
   if (!imagePath) {
     console.warn("Image path is not provided.");
@@ -21,7 +24,21 @@ const constructImageURL = (imagePath) => {
 };
 const TourPlanDetails = ({ tourPlan }) => {
   const [expandedStates, setExpandedStates] = useState([]);
-  const navigate=useNavigate();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
+
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) => {
+    closeModal();
+  };
+  const navigate = useNavigate();
 
   const handleToggle = (index) => {
     const updatedStates = [...expandedStates];
@@ -37,13 +54,15 @@ const TourPlanDetails = ({ tourPlan }) => {
   const {
     images = [],
     title = "",
-    tourCode="",
+    tourCode = "",
     baseFare = 0,
     origFare = 0,
     startPlace = {},
     endPlace = {},
     itinerary = [],
+    addressId={}
   } = tourPlan;
+
 
   // Generate the image URLs
   const packageImageURLs = images.map((imagePath) => {
@@ -59,22 +78,21 @@ const TourPlanDetails = ({ tourPlan }) => {
   const totalPlacesVisited = itinerary.reduce((total, day) => {
     return total + (day.places ? day.places.length : 0);
   }, 0);
-  const handlePlaceDetails=(name)=>{
+  const handlePlaceDetails = (name) => {
     const formattedName = name.toLowerCase().replace(/\s+/g, "-"); // Convert to lowercase and replace spaces with hyphens
-  navigate(`/place/${encodeURIComponent(formattedName)}`);
-}
-  const handleTourPlanDetails=()=>{
+    navigate(`/place/${encodeURIComponent(formattedName)}`);
+  };
+  const handleTourPlanDetails = () => {
     const formattedName = tourCode.toLowerCase(); // Convert to lowercase and replace spaces with hyphens
-  navigate(`/tour-plan/${formattedName}`);
-}
+    navigate(`/tour-plan/${formattedName}`);
+  };
   // Format the title
   const formattedTitle = `${title.toUpperCase()} (FROM ${
     startPlace.city || "START CITY"
   })`;
 
   return (
-    
-    <div style={{ textAlign: "center", padding: "20px" }}>
+    <div style={{ padding: "20px" }}>
       {/* Display the first image */}
       {packageImageURLs.length > 0 && (
         <img
@@ -136,15 +154,15 @@ const TourPlanDetails = ({ tourPlan }) => {
           </button>
         </div>
       </div>
- {/* Display the itinerary */}
- <h2 style={{ marginTop: "20px", color: "#333" }}>Itinerary Summary</h2>
-        {itinerary.map((day, index) => (
-          <div key={index} style={{ margin: "10px 0" }}>
-            <h3 style={{ fontSize: "16px", color: "#ef156c" }}>
-              Day {day.day}: {day.title}
-            </h3>
-          </div>
-        ))}
+      {/* Display the itinerary */}
+      <h2 style={{ marginTop: "20px", color: "#333" }}>Itinerary Summary</h2>
+      {itinerary.map((day, index) => (
+        <div key={index} style={{ margin: "10px 0" }}>
+          <h3 style={{ fontSize: "16px", color: "#ef156c" }}>
+            Day {day.day}: {day.title}
+          </h3>
+        </div>
+      ))}
       {/* Display the itinerary */}
       <div style={{ textAlign: "left", marginTop: "20px" }}>
         <h2 style={{ color: "#333" }}>Itinerary Summary</h2>
@@ -205,43 +223,49 @@ const TourPlanDetails = ({ tourPlan }) => {
                     }}
                   ></div>
 
-                 <div className="d-flex gap-3">
-                 <button
-                    onClick={() => handleToggle(placeIndex)}
-                    style={{
-                      backgroundColor: "#ef156c",
-                      color: "white",
-                      border: "none",
-                      padding: "8px 12px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      marginTop: "10px",
-                    }}
-                  >
-                    {expandedStates[placeIndex] ? "Read Less" : "Read More"}
-                  </button>
-                  <button
-                    onClick={()=>handlePlaceDetails(place.name)}
-                    style={{
-                      borderColor: "#ef156c",
-                      color: "#ef156c",
-                      border: "1px solid",
-                      padding: "8px 12px",
-                      borderRadius: "5px",
-                      cursor: "pointer",
-                      marginTop: "10px",
-                      backgroundColor:"white"
-                    }}
-                  >
-                   view Details
-                  </button>
-                 </div>
+                  <div className="d-flex gap-3">
+                    <button
+                      onClick={() => handleToggle(placeIndex)}
+                      style={{
+                        backgroundColor: "#ef156c",
+                        color: "white",
+                        border: "none",
+                        padding: "8px 12px",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        marginTop: "10px",
+                      }}
+                    >
+                      {expandedStates[placeIndex] ? "Read Less" : "Read More"}
+                    </button>
+                    <button
+                      onClick={() => handlePlaceDetails(place.name)}
+                      style={{
+                        borderColor: "#ef156c",
+                        color: "#ef156c",
+                        border: "1px solid",
+                        padding: "8px 12px",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        marginTop: "10px",
+                        backgroundColor: "white",
+                      }}
+                    >
+                      view Details
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         ))}
       </div>
+      <div className="mt-3">
+      <ReviewForState stateName={addressId?.state}/>
+      </div>
+      <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
     </div>
   );
 };
@@ -281,6 +305,7 @@ const ViewItinerariesPage = () => {
     <div>
       {packageDetails ? (
         <TourPlanDetails tourPlan={packageDetails} />
+       
       ) : (
         <p>No tour plan data available.</p>
       )}

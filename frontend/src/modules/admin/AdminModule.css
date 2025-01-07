@@ -1,0 +1,68 @@
+/* Admin Layout */
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+/* Header */
+.header {
+  background-color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Main Content */
+.main-content {
+  flex-grow: 1;
+  padding: 20px;
+  margin-left: 240px;
+  /* margin-top: 70px; Adjust for header */
+  transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out; /* Smooth transition for content shift */
+}
+
+/* When sidebar is open, shift the main content */
+.main-content.sidebar-open {
+  margin-left: 250px; /* Sidebar takes 250px of space */
+  width: calc(100% - 250px); /* Shrink the main content width when sidebar is open */
+}
+
+/* Desktop Sidebar (Always visible on larger screens) */
+.desktop-sidebar {
+  background-color: #f8f9fa;
+  width: 250px; /* Set the width for desktop */
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 60px; /* Adjust for header */
+  z-index: 1000;
+}
+
+/* Mobile Sidebar (Offcanvas) */
+.offcanvas {
+  background-color: #f8f9fa;
+  width: 250px; /* Set the width for mobile view */
+}
+
+@media (max-width: 768px) {
+  /* Hide desktop sidebar on mobile */
+  .desktop-sidebar {
+    display: none;
+  }
+
+  /* Adjust the main content when sidebar is open */
+  .main-content.sidebar-open {
+    margin-left: 0;
+    width: 100%;
+  }
+  .main-content{
+    margin-left: 0;
+  }
+
+  /* Set Offcanvas to slide over and cover full width */
+  .offcanvas {
+    width: 100%; /* Full width on mobile */
+  }
+}

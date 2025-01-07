@@ -30,6 +30,9 @@ import "swiper/css/thumbs";
 
 // import required modules
 import { FreeMode, Navigation, Thumbs } from "swiper/modules";
+import ReviewForState from "../../Reviews/ReviewForState";
+import ReusableModal from "../../model/ReusableModel";
+import QuoteForm from "../../model/QuoteForm";
 
 const PackagePage = () => {
   const { tourCode } = useParams();
@@ -75,6 +78,21 @@ const PackagePage = () => {
   const bookingPolicyRef = useRef(null);
   const navigate = useNavigate();
   const upperCaseTourCode = tourCode.toUpperCase();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
+
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) => {
+    closeModal();
+  };
   const scrollToSection = (ref) => {
     if (ref.current) {
       ref.current.scrollIntoView({ behavior: "smooth" });
@@ -915,101 +933,12 @@ const PackagePage = () => {
       </div>
 
       {/* Reviews */}
-      <div className="card shadow-hover">
-        <div
-          className="card-header text-white fw-bold"
-          style={{ backgroundColor: "rgba(40, 41, 65, 1)" }}
-        >
-          Reviews
-        </div>
-        <div className="card-body">
-          {reviews && reviews.length > 0 ? (
-            reviews.map((review) => (
-              <div
-                key={review._id}
-                className="mb-3 p-3 border rounded shadow review-card hover-shadow"
-                style={{
-                  boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
-                {/* Reviewer Details */}
-                <div className="d-flex align-items-center">
-                  <div
-                    className="rounded-circle d-flex justify-content-center align-items-center"
-                    style={{
-                      width: "50px",
-                      height: "50px",
-                      backgroundColor: "#f50057",
-                      color: "white",
-                      fontWeight: "bold",
-                      fontSize: "20px",
-                      marginRight: "10px",
-                    }}
-                  >
-                    {review.name.charAt(0).toUpperCase()}
-                  </div>
-                  <div>
-                    <h6 className="m-0">{review.name}</h6>
-                    <small className="text-muted">{review.username}</small>
-                  </div>
-                  <div className="ms-auto text-muted">
-                    {new Date(review.updatedAt).toLocaleDateString()}
-                  </div>
-                </div>
-
-                {/* Star Rating */}
-                <div className="my-2">
-                  {Array.from({ length: 5 }, (_, index) => (
-                    <span
-                      key={index}
-                      style={{
-                        color: index < review.rating ? "#ffc107" : "#e4e5e9",
-                        fontSize: "18px",
-                      }}
-                    >
-                      ★
-                    </span>
-                  ))}
-                </div>
-
-                {/* Review Comments */}
-                <p className="fw-bold">{review.comments}</p>
-
-                {/* Additional Details */}
-                {/* <p className="mb-1">
-                  <strong>Package:</strong> {review.packageName}
-                </p>
-                <p className="mb-1">
-                  <strong>Duration:</strong> {review.duration}
-                </p>
-                <p className="mb-1">
-                  <strong>Price:</strong> ₹{review.price}
-                </p> */}
-
-                {/* Hover Effect */}
-                <div
-                  className="hover-overlay"
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "rgba(0, 0, 0, 0.05)",
-                    opacity: 0,
-                    transition: "opacity 0.3s ease",
-                  }}
-                ></div>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted">No reviews yet</p>
-          )}
-        </div>
+      <div className="mt-3">
+        <ReviewForState stateName={packageDetails?.addressId?.state} />
       </div>
-
+      <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
       <Dialog
         open={signInOpen}
         onClose={handleSignInClose}

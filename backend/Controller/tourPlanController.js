@@ -381,12 +381,8 @@ exports.getTourPlanByStateSearch = async (req, res) => {
 exports.getTourPlansByState = async (req, res) => {
   try {
     const { stateName } = req.params;
-    const { from, duration } = req.query;
 
-    console.log("Fetching tour plans for state:", stateName, "with filters:", {
-      from,
-      duration,
-    });
+    console.log("Fetching tour plans for state:", stateName);
 
     // Find the address with the matching stateName
     const address = await Address.findOne({
@@ -399,60 +395,23 @@ exports.getTourPlansByState = async (req, res) => {
         .json({ message: "No address found for the given state" });
     }
 
-    // Build the query object based on provided filters
-    const query = { addressId: address._id };
-
-    // Sanitize and validate 'from' parameter
-    const sanitizedFrom = from && from !== "null" ? from : null;
-    if (sanitizedFrom && mongoose.Types.ObjectId.isValid(sanitizedFrom)) {
-      query.startPlace = sanitizedFrom; // Add startPlace filter only if valid
-    }
-
-    // Sanitize and validate 'duration' parameter
-    const sanitizedDuration = duration && duration !== "null" ? duration : null;
-    if (sanitizedDuration) {
-      query.duration = sanitizedDuration; // Add duration filter if valid
-    }
-
-    // Fetch tour plans with optional filters
-    const tourPlans = await TourPlan.find(query)
+    // Fetch tour plans associated with the state
+    const tourPlans = await TourPlan.find({ addressId: address._id })
       .populate(
         "addressId",
         "country state city description images startingPrice"
       )
       .populate("startPlace", "name description")
-      .populate("endPlace", "name description")
-      .populate("themeId", "name description")
       .lean(); // Fetch plain objects for easier manipulation
 
     if (tourPlans.length === 0) {
       return res.json({
-        message:
-          "No tour plans found for the given state with the provided filters",
+        message: "No tour plans found for the given state",
         address,
       });
     }
 
-    // Fetch reviews and review count for each tourPlan
-    for (const plan of tourPlans) {
-      const bookings = await Booking.find({ packageId: plan._id }).select(
-        "orderId"
-      );
-
-      const bookingIds = bookings.map((booking) => booking.orderId);
-
-      const reviews = await Review.find({ bookingId: { $in: bookingIds } });
-
-      plan.reviews = reviews.map((review) => ({
-        rating: review.rating,
-        comment: review.comment,
-        user: review.user, // Include any other fields you want
-      }));
-
-      plan.reviewCount = reviews.length;
-    }
-
-    // Return the tour plans with reviews and counts
+    // Return data without reviews
     res.json({
       message: "Tour plans retrieved successfully",
       address,
@@ -463,6 +422,118 @@ exports.getTourPlansByState = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+exports.getReviewsByState = async (req, res) => {
+  try {
+    const { stateName } = req.params;
+    const { page = 1, limit = 5 } = req.query;
+
+    console.log("Fetching reviews for state:", stateName);
+
+    // Find the address with the matching stateName
+    const address = await Address.findOne({
+      state: new RegExp(`^${stateName}$`, "i"),
+    }).select("_id state");
+
+    if (!address) {
+      return res
+        .status(404)
+        .json({ message: "No address found for the given state" });
+    }
+
+    // Fetch tour plans associated with this state
+    const tourPlans = await TourPlan.find({ addressId: address._id }).lean();
+
+    if (tourPlans.length === 0) {
+      return res.json({
+        message: `No tour plans found for the state: ${stateName}`,
+        reviews: [],
+        tourCount: 0,
+        averageTourRating: 0,
+      });
+    }
+
+    // Collect tourPlan IDs
+    const tourPlanIds = tourPlans.map((plan) => plan._id);
+
+    // Collect startPlace IDs
+    const startPlaceIds = tourPlans
+      .map((plan) => plan.startPlace)
+      .filter((id) => id); // Remove null or undefined values
+
+    // Fetch startPlace cities from Address collection
+    const startPlaces = await Address.find({ _id: { $in: startPlaceIds } })
+      .select("_id city")
+      .lean();
+
+    // Create a map of startPlace ID to city
+    const startPlaceCityMap = startPlaces.reduce((acc, place) => {
+      acc[place._id.toString()] = place.city;
+      return acc;
+    }, {});
+
+    // Fetch bookings linked to these tour plans
+    const bookings = await Booking.find({ packageId: { $in: tourPlanIds } })
+      .select("orderId packageId")
+      .lean();
+
+    const bookingIds = bookings.map((booking) => booking.orderId);
+
+    // Fetch reviews only for the bookings linked to these tour plans
+    const skip = (page - 1) * limit;
+    const reviews = await Review.find({ bookingId: { $in: bookingIds } })
+      .select("tourRating comments name email createdAt userId bookingId")
+      .skip(skip)
+      .limit(Number(limit))
+      .lean();
+
+    // Calculate total reviews and average rating
+    const allReviews = await Review.find({ bookingId: { $in: bookingIds } }).select("tourRating").lean();
+    const totalRating = allReviews.reduce((sum, review) => sum + review.tourRating, 0);
+    const averageTourRating = allReviews.length > 0 ? totalRating / allReviews.length : 0;
+
+    // Return reviews formatted for the state
+    const formattedReviews = reviews.map((review) => {
+      // Find the tourPlan associated with the review
+      const tourPlan = tourPlans.find(
+        (plan) => plan._id.toString() === bookings.find((b) => b.orderId === review.bookingId)?.packageId.toString()
+      );
+
+      // Get the city of the startPlace from the map
+      const startPlaceCity =
+        tourPlan && startPlaceCityMap[tourPlan.startPlace?.toString()]
+          ? startPlaceCityMap[tourPlan.startPlace.toString()]
+          : "Unknown";
+
+      return {
+        rating: review.tourRating,
+        comment: review.comments,
+        name: review.name,
+        email: review.email,
+        date: review.createdAt,
+        user: review.userId,
+        stateName: stateName, // State name from the request
+        startPlace: startPlaceCity, // City of the startPlace
+      };
+    });
+
+    res.json({
+      message: "Reviews retrieved successfully",
+      stateName: stateName,
+      reviews: formattedReviews,
+      tourCount: allReviews.length, // Total tours linked to this state
+      averageTourRating: averageTourRating.toFixed(2),
+      pagination: {
+        currentPage: Number(page),
+        totalReviews: allReviews.length,
+        totalPages: Math.ceil(allReviews.length / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching reviews by state:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // 3. Get a single tour plan by ID
 exports.getTourPlanById = async (req, res) => {
   try {

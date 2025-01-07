@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import "../Statecard/StatePage.css";
@@ -12,7 +12,9 @@ import {
   faSearch,
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
-import Review from "../../Reviews/Review";
+import ReviewForState from "../../Reviews/ReviewForState";
+import ReusableModal from "../../model/ReusableModel";
+import QuoteForm from "../../model/QuoteForm";
 const StatePage = () => {
   const { stateName } = useParams();
   const location = useLocation();
@@ -28,22 +30,40 @@ const StatePage = () => {
   const [startPlace, setStartPlace] = useState("");
   const [destination, setDestination] = useState("");
   const [duration, setDuration] = useState("");
+  const hasFetchedStateData = useRef(false); // Tracks state data fetch
+  const hasFetchedInitialData = useRef(false); // Tracks initial data fetch
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
 
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) => {
+    closeModal();
+  };
   useEffect(() => {
     const fetchStateData = async () => {
+      if (hasFetchedStateData.current) return; // Prevent multiple fetches
+      hasFetchedStateData.current = true;
+
       try {
         const queryParams = new URLSearchParams(location.search);
 
         const fromValue = queryParams.get("from");
         const durationValue = queryParams.get("duration");
-        console.log(durationValue,'sds');
-      
-        setDuration(`${durationValue} Days / ${durationValue - 1} Night${durationValue > 2 ? "s" : ""}`);
+
+        console.log(durationValue, "duration");
+        setDuration(
+          `${durationValue} Days / ${durationValue - 1} Night${
+            durationValue > 2 ? "s" : ""
+          }`
+        );
         setStartPlace(fromValue);
-        console.log("Query Parameters:", {
-          from: fromValue,
-          duration: durationValue,
-        });
 
         const response = await axios.get(
           `http://localhost:3000/api/tour-plans/tour-plans/state/${encodeURIComponent(
@@ -52,14 +72,10 @@ const StatePage = () => {
         );
 
         const { address, tourPlans } = response.data;
-        console.log(response.data);
-        
-        setStateData(address || {}); // Set address details
-        setPackages(tourPlans || []); // Set all packages
-        // if (tourPlans) {
-        //   setStartPlaces("");
-        //   setDurations("");
-        // }
+
+        setStateData(address || {});
+        setPackages(tourPlans || []);
+
         // Filter top 5 packages with itTop === "Y"
         const topPackagesData = (tourPlans || [])
           .filter((pkg) => pkg.itTop === "Y")
@@ -69,10 +85,16 @@ const StatePage = () => {
         setError(err.response?.data?.message || "Error fetching state data");
       }
     };
+
     fetchStateData();
   }, [stateName, location.search]);
+
+  // Fetch initial data for dropdowns
   useEffect(() => {
     const fetchInitialData = async () => {
+      if (hasFetchedInitialData.current) return; // Prevent multiple fetches
+      hasFetchedInitialData.current = true;
+
       try {
         const response = await axios.get(
           `http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search-by-state/${stateName}`
@@ -96,7 +118,8 @@ const StatePage = () => {
     };
 
     fetchInitialData();
-  }, []);
+  }, [stateName]);
+
   const handleSearch = async () => {
     const days = parseInt(duration?.split(" ")[0], 10);
     console.log("Search triggered with:", {
@@ -369,8 +392,11 @@ const StatePage = () => {
         )}
       </div>
       <div className="mt-4">
-        <Review />
+        <ReviewForState stateName={stateName}/>
       </div>
+      <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
     </div>
   );
 };

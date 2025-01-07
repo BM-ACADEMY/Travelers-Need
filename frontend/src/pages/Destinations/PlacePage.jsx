@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import './PlacePage.css';
+import ReusableModal from "../model/ReusableModel";
+import QuoteForm from "../model/QuoteForm";
 
 const constructImageURL = (imagePath) => {
   if (!imagePath) {
@@ -21,6 +23,20 @@ const constructImageURL = (imagePath) => {
 const PlacePage = () => {
   const { placeName } = useParams();
   const [placeDetails, setPlaceDetails] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
+
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) => {
+    closeModal();
+  };
 
   const formatNameToOriginal = (formattedName) => {
     return formattedName
@@ -135,6 +151,9 @@ const PlacePage = () => {
           <p dangerouslySetInnerHTML={{ __html: placeDetails.description }} />
         </div>
       </div>
+      <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
     </div>
   );
 };

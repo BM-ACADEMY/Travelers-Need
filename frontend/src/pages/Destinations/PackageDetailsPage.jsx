@@ -22,6 +22,9 @@ import {
 import HowToReach from "./HowToReach";
 import { useNavigate } from "react-router-dom";
 import PlaceCard from "./PlaceCard";
+import ReusableModal from "../model/ReusableModel";
+import QuoteForm from "../model/QuoteForm";
+
 
 const constructImageURL = (imagePath) => {
   const parts = imagePath?.split("\\");
@@ -53,7 +56,23 @@ const PackageDetailsPage = () => {
   const [topPackages, setTopPackages] = useState([]);
   const [stateData, setStateData] = useState(null);
   const [packages, setPackages] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigator = useNavigate();
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
+
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) => {
+    closeModal();
+  };
+
   useEffect(() => {
     if (placeDetails?.parentCity?.weatherInfo?.nearestCity) {
       fetchWeatherData(placeDetails?.parentCity?.weatherInfo?.nearestCity);
@@ -150,9 +169,9 @@ const PackageDetailsPage = () => {
     console.log("Viewing details for:", place.name);
   };
 
-  const handleNavigateToTourPlan =()=>{
-    navigator(`/state/${encodeURIComponent(stateName)}`)
-  }
+  const handleNavigateToTourPlan = () => {
+    navigator(`/state/${encodeURIComponent(stateName)}`);
+  };
   const renderContent = () => {
     if (loading) {
       return <div>Loading...</div>;
@@ -606,12 +625,15 @@ const PackageDetailsPage = () => {
         </table>
       </div>
       <a
-      onClick={handleNavigateToTourPlan}
+        onClick={handleNavigateToTourPlan}
         className="btn btn-danger"
-        style={{ backgroundColor: "#ef156c",textAlign:"center" }}
+        style={{ backgroundColor: "#ef156c", textAlign: "center" }}
       >
         All {stateName} Tour Plans
       </a>
+      <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
     </div>
   );
 };

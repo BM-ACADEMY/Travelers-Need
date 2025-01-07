@@ -12,7 +12,8 @@ const {
   getTourPlanImage,
   getItineraryByTourCode,
   getAllTourPlansForSearch,
-  getTourPlanByStateSearch
+  getTourPlanByStateSearch,
+  getReviewsByState
 } = require("../Controller/tourPlanController");
 const router = express.Router();
 // Configure multer for file uploads
@@ -22,6 +23,7 @@ router.post("/create-tour-plan", upload.array("images"), createTourPlan); // Cre
 router.get("/get-all-tour-plans", getAllTourPlans); // Retrieve all tour plans
 router.get("/get-all-tour-plans-for-search", getAllTourPlansForSearch); // Retrieve all tour plans
 router.get("/get-all-tour-plans-for-search-by-state/:stateName", getTourPlanByStateSearch); // Retrieve all tour plans
+router.get("/get-all-tour-plan-reviews-by-state/:stateName", getReviewsByState); // Retrieve all tour plans
 router.get("/tour-plans/state/:stateName", getTourPlansByState);
 router.get("/get-tour-plan/:tourPlanId", getTourPlanById); // Retrieve a tour plan by ID
 router.put("/update-tour-plan/:tourPlanId", upload.array("images"), updateTourPlan); // Update a tour plan

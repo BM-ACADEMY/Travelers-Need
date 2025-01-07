@@ -17,31 +17,44 @@ import PackageDetailsPage from "./pages/Destinations/PackageDetailsPage";
 import PlacePage from "./pages/Destinations/PlacePage";
 import ViewItinerariesPage from "./pages/Categories/PackageCard/ViewItinerariesPage";
 
+
+
 export default function App() {
   return (
-   <UserProvider>
-     <Router>
-      <Routes>  
-        <Route path="/" element={<Layout />}>
-          <Route path="/"  element={<Home />} />
-          <Route path="/write-review" element={<WriteReview />} />
-          <Route path="/reset-password" element={<Reset_password />} />
-          <Route path="/forgot_password" element={<Forgot_password />}/>
-          <Route path="/sign_up" element={<Sign_up />}/>
-          <Route path="/sign_in" element={<Sign_in />}/>
-          <Route path="/read-review" element={<Review />}/>
-          <Route path="/write-review" element={<WriteReview />}/>
-          <Route path="/city-view" element={<CityView />}/>
-          <Route path="/state/:stateName" element={<StatePage/>} />
-          <Route path="/themes/:themename" element={<ThemePage />} />
-          <Route exact path="/tour-plan/:tourCode" element={<PackagePage/>} />
-          <Route path="/destinations" element={<Top_destinations/>} />
-          <Route path="/details/:stateName/:cityName" element={<PackageDetailsPage />} />
-          <Route path="/place/:placeName" element={<PlacePage />} />
-          <Route path="/view-itineraries/:tourCode" element={<ViewItinerariesPage />} />
-        </Route>
-      </Routes>
-    </Router>
-   </UserProvider>
+   
+      <UserProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/write-review" element={<WriteReview />} />
+              <Route path="/reset-password" element={<Reset_password />} />
+              <Route path="/forgot_password" element={<Forgot_password />} />
+              <Route path="/sign_up" element={<Sign_up />} />
+              <Route path="/sign_in" element={<Sign_in />} />
+              <Route path="/reviews" element={<Review />} />
+              <Route path="/write-review" element={<WriteReview />} />
+              <Route path="/city-view" element={<CityView />} />
+              <Route path="/state/:stateName" element={<StatePage />} />
+              <Route path="/themes/:themename" element={<ThemePage />} />
+              <Route
+                exact
+                path="/tour-plan/:tourCode"
+                element={<PackagePage />}
+              />
+              <Route path="/destinations" element={<Top_destinations />} />
+              <Route
+                path="/details/:stateName/:cityName"
+                element={<PackageDetailsPage />}
+              />
+              <Route path="/place/:placeName" element={<PlacePage />} />
+              <Route
+                path="/view-itineraries/:tourCode"
+                element={<ViewItinerariesPage />}
+              />
+            </Route>
+          </Routes>
+        </Router>
+      </UserProvider>
   );
 }

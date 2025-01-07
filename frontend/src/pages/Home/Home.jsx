@@ -23,9 +23,9 @@ import Beach_category from "../Categories/Beach_category";
 import Themes_category from "../Categories/Themes_category";
 import Wildlife_category from "../Categories/Wildlife_category";
 import MapComponent from "../../components/MapComponent";
-const destinations = ["Paris", "Bali", "New York"];
-const durations = ["3 Days", "1 Week", "2 Weeks"];
-const months = ["January", "February", "March"];
+import ReusableModal from "../model/ReusableModel";
+import QuoteForm from "../model/QuoteForm";
+
 
 const Home = () => {
   const navigate = useNavigate();
@@ -54,6 +54,7 @@ const Home = () => {
   const [startPlace, setStartPlace] = useState("");
   const [destination, setDestination] = useState("");
   const [duration, setDuration] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
   useEffect(() => {
     if (swiperRef.current) {
       swiperRef.current.params.navigation.prevEl = prevRef.current;
@@ -161,38 +162,28 @@ const Home = () => {
       console.error("Error fetching packages:", error.message);
     }
   };
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
 
-  // useEffect(() => {
-  //   const token = sessionStorage.getItem(secretKey);
-  //   if (!token) {
-  //     console.log("No token found. Redirecting to Sign In...");
-  //     // navigate("/signIn");
-  //     return;
-  //   }
-
-  //   try {
-  //     const decoded = jwtDecode(token);
-  //     if (decoded.exp * 1000 < Date.now()) {
-  //       console.log("Token has expired.");
-  //       sessionStorage.removeItem(secretKey);
-  //       // navigate("/signIn");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error decoding token:", error.message);
-  //     // navigate("/signIn");
-  //   }
-  // }, []);
-
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
   useEffect(() => {
     fetchReviews();
     fetchPackages();
     fetchThemes();
   }, []);
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) =>  closeModal();
+
+ 
 
   const renderStars = (rating) => "★".repeat(rating) + "☆".repeat(5 - rating);
 
   const handleReadMore = () => {
-    navigate("/read-review");
+    navigate("/reviews");
   };
   const handleWriteReview = () => {
     navigate("/write-review");
@@ -500,6 +491,9 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
     </div>
   );
 };

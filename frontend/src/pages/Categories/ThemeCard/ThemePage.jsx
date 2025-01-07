@@ -4,15 +4,31 @@ import axios from "axios";
 import PackageCard from "../PackageCard/PackageCard";
 import "../ThemeCard/ThemePage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPhone} from "@fortawesome/free-solid-svg-icons";
+import { faPhone } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
+import ReusableModal from "../../model/ReusableModel";
+import QuoteForm from "../../model/QuoteForm";
 const ThemePage = () => {
   const { themename } = useParams();
   const [themeDetails, setThemeDetails] = useState(null);
   const [tourPlans, setTourPlans] = useState([]);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
+
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) => {
+    closeModal();
+  };
   useEffect(() => {
     const fetchThemeDetails = async () => {
       try {
@@ -49,70 +65,76 @@ const ThemePage = () => {
   // Extract themeName and fileName
   const themeName = parts[0]; // "honeymoon"
   const fileName = parts[1]; // "1735803116241-honeymoon.jpg"
-  
+
   // Construct the URL
-  const themeImageURL = themeName && fileName
-    ? `http://localhost:3000/api/themes/get-image?themeName=${encodeURIComponent(
-        themeName
-      )}&fileName=${encodeURIComponent(fileName)}`
-    : "/path/to/default-image.jpg";
+  const themeImageURL =
+    themeName && fileName
+      ? `http://localhost:3000/api/themes/get-image?themeName=${encodeURIComponent(
+          themeName
+        )}&fileName=${encodeURIComponent(fileName)}`
+      : "/path/to/default-image.jpg";
 
   // Generate a random starting price
-  const startingPrice =
-    Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000; // Random between ₹3000 and ₹5000
+  const startingPrice = Math.floor(Math.random() * (5000 - 3000 + 1)) + 3000; // Random between ₹3000 and ₹5000
 
   return (
     <div className="theme-page">
-   <div
-  className="theme-header"
-  style={{
-    backgroundImage: `url(${themeImageURL})`,
-    backgroundPosition: "center",
-    backgroundSize: "cover",
-    height: "400px",
-    position: "relative",
-  }}
->
-  {/* Right Side Quick Quote Section */}
-  <div
-    style={{
-      position: "absolute",
-      top: "20px",
-      right: "20px",
-      backgroundColor:"white",
-      borderRadius:"10px",
-      padding:"8px",  
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      color: "#fff",
-      fontSize: "18px",
-    }}
-  >
-    <span className="text-dark">Need Quick Quote?</span>
-    <a href="tel:+917799591230" style={{ color: "#fff" }}>
-    <FontAwesomeIcon  icon={faPhone} style={{ fontSize: "20px", color: "#ef156c" }} />
-    </a>
-    <a
-      href="https://wa.me/9944940051"
-      target="_blank"
-      rel="noopener noreferrer"
-      style={{ color: "#fff" }}
-    >
-    <FontAwesomeIcon icon={faWhatsapp} style={{ fontSize: "20px", color: "#ef156c" }} />
+      <div
+        className="theme-header"
+        style={{
+          backgroundImage: `url(${themeImageURL})`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+          height: "400px",
+          position: "relative",
+        }}
+      >
+        {/* Right Side Quick Quote Section */}
+        <div
+          style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+            backgroundColor: "white",
+            borderRadius: "10px",
+            padding: "8px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            color: "#fff",
+            fontSize: "18px",
+          }}
+        >
+          <span className="text-dark">Need Quick Quote?</span>
+          <a href="tel:+917799591230" style={{ color: "#fff" }}>
+            <FontAwesomeIcon
+              icon={faPhone}
+              style={{ fontSize: "20px", color: "#ef156c" }}
+            />
+          </a>
+          <a
+            href="https://wa.me/9944940051"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "#fff" }}
+          >
+            <FontAwesomeIcon
+              icon={faWhatsapp}
+              style={{ fontSize: "20px", color: "#ef156c" }}
+            />
+          </a>
+          <span className="text-dark">+91-9944940051</span>
+        </div>
 
-    </a>
-    <span className="text-dark">+91-9944940051</span>
-  </div>
-
-  {/* Main Content */}
-  <div className="text-center header-overlay">
-    <p className="tour-plan-count">{tourPlans.length} Tour Plans Available</p>
-    <h1 className="theme-name">{themeDetails.name}</h1>
-    <p className="starting-price">Starting from ₹{startingPrice}</p>
-  </div>
-</div>
-
+        {/* Main Content */}
+        <div className="text-center header-overlay">
+          <p className="tour-plan-count">
+            {tourPlans.length} Tour Plans Available
+          </p>
+          <h1 className="theme-name">{themeDetails.name}</h1>
+          <p className="starting-price">Starting from ₹{startingPrice}</p>
+        </div>
+      </div>
 
       {/* Theme Description */}
       <div className="container mt-4">
@@ -136,7 +158,9 @@ const ThemePage = () => {
 
       {/* Top 5 Packages Table */}
       <div className="container mt-5">
-        <h2 className="text-center mb-4">Top 5 Packages for {themeDetails.name}</h2>
+        <h2 className="text-center mb-4">
+          Top 5 Packages for {themeDetails.name}
+        </h2>
         <table className="table table-striped">
           <thead>
             <tr>
@@ -192,6 +216,9 @@ const ThemePage = () => {
           )}
         </div>
       </div>
+      <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
     </div>
   );
 };

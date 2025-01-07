@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../Destinations/Top_destinations.css";
 import { useNavigate } from "react-router-dom";
+import ReusableModal from "../model/ReusableModel";
+import QuoteForm from "../model/QuoteForm";
 
 // Helper function to construct image URL
 const constructImageURL = (imagePath) => {
@@ -26,9 +28,10 @@ const Top_destinations = () => {
   const [countryPopularCities, setCountryPopularCities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchDestinations = async () => {
       try {
         const response = await axios.get(
@@ -48,8 +51,6 @@ const Top_destinations = () => {
         }));
 
         setStatePopularCities(transformedStatePopularCities || []);
-        console.log(statePopularCities);
-        
         setCountryPopularCities(transformedCountryPopularCities || []);
         setLoading(false);
       } catch (err) {
@@ -59,7 +60,25 @@ const Top_destinations = () => {
     };
 
     fetchDestinations();
+
+    // Trigger the modal after 3 seconds
+    
+
+   // Cleanup timeout on component unmount
   }, []);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsModalOpen(true);
+    }, 5000); // Show modal after 3 seconds
+
+    return () => clearTimeout(timeout); // Cleanup on unmount
+  }, []);
+
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleFormSubmit = (formData) => {
+    closeModal();
+  };
 
   const handleShowMore = (stateName) => {
     navigate(`/state-popular-places/${stateName}`);
@@ -136,6 +155,9 @@ const Top_destinations = () => {
           </div>
         </div>
       ))}
+       <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
+        <QuoteForm onSubmit={handleFormSubmit} />
+      </ReusableModal>
     </div>
   );
 };
