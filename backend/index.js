@@ -16,6 +16,8 @@ const reviewRoutes = require('./Routes/reviewRoutes');
 const placeRoutes = require('./Routes/placeRoutes');
 const tourPlanRoutes = require('./Routes/tourPlanRoutes');
 const quoteRoutes=require('./Routes/quoteRoutes');
+const blogRoutes=require('./Routes/blogRoutes');
+
 // Load environment variables
 dotenv.config();
 
@@ -58,7 +60,7 @@ app.use('/api/reviews', reviewRoutes);
 app.use('/api/places', placeRoutes);
 app.use('/api/tour-plans', tourPlanRoutes);
 app.use('/api/quotes', quoteRoutes);
-
+app.use('/api/blogs',blogRoutes)
 
 // Static folders for uploaded files
 app.use("/uploads", express.static("uploads/packages"));

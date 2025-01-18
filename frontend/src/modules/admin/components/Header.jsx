@@ -1,19 +1,39 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars, faSearch, faBell, faUserCircle, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { Dropdown } from "react-bootstrap"; 
-import "./Header.css"; // You can still use custom styles for minor tweaks
+import "./Header.css"; // Custom styles for header, including sticky functionality
+import { useComponentName } from '../../../hooks/ComponentnameContext';
 
-const Header = ({ toggleSidebar, activeTitle }) => {
+const Header = ({ toggleSidebar }) => {
+  const { componentName } = useComponentName();
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = () => {
+    if (window.scrollY > 0) {
+      setIsScrolled(true);
+    } else {
+      setIsScrolled(false);
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   return (
-    <header className="header sticky-top bg-white ">
-      <div className="container-fluid d-flex justify-content-between align-items-center p-3">
+    <header className={`header ${isScrolled ? 'scrolled' : ''} sticky-top bg-white`}>
+      <div className="container-fluid d-flex justify-content-around align-items-center p-3">
         {/* Left side: Sidebar Toggle and Active Title */}
         <div className="d-flex align-items-center">
-          <button className="btn btn-link p-0" onClick={toggleSidebar}>
-            <FontAwesomeIcon icon={faBars} className="fs-3" />
+          <button className="btn btn-link p-0 d-lg-none d-sm-block" onClick={toggleSidebar}>
+            <FontAwesomeIcon icon={faBars} className="fs-3 menu-icon" />
           </button>
-          <h4 className="m-0 ms-3">{activeTitle}</h4>
+          <h4>{componentName ? `Welcome to ${componentName}` : 'Welcome!'}</h4>
         </div>
 
         {/* Right side: Search, Notifications, User Profile */}
@@ -31,7 +51,7 @@ const Header = ({ toggleSidebar, activeTitle }) => {
           {/* Notifications Icon */}
           <FontAwesomeIcon
             icon={faBell}
-            className="ms-3 fs-4"
+            className="ms-3 fs-4 d-md-none"  // Only visible on mobile view (below medium screen size)
             style={{ cursor: "pointer" }}
           />
 
@@ -55,7 +75,7 @@ const Header = ({ toggleSidebar, activeTitle }) => {
                 Profile
               </Dropdown.Item>
               <Dropdown.Item href="/logout">
-                <FontAwesomeIcon icon={faSignOutAlt} className="me-2 " style={{}} />
+                <FontAwesomeIcon icon={faSignOutAlt} className="me-2 " />
                 Logout
               </Dropdown.Item>
             </Dropdown.Menu>

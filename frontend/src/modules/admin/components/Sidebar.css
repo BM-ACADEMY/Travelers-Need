@@ -3,6 +3,8 @@
     background-color: #dce0e1;
     width: 250px;
     padding: 1rem;
+    margin-top: 70px !important;
+    padding-top: 0;
     box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
   }
   
@@ -12,7 +14,8 @@
   }
   
   .sidebar-logo img {
-    max-width: 100px; /* Set a max width for the logo */
+    height: 120px;
+    max-width: 120px; /* Set a max width for the logo */
   }
   
   /* Style the sidebar links */
@@ -38,4 +41,5 @@
       display: none;
     }
   }
+
   

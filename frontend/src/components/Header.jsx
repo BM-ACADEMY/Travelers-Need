@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCaretDown,
@@ -25,13 +25,18 @@ const Navbar = () => {
     []
   );
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
   const baseurl = import.meta.env.VITE_BASE_URL;
   // Handlers for modals
   const handleSignInOpen = () => {
     setSignUpOpen(false);
     setSignInOpen(true);
   };
+  const handleAdminPanel = () => {
+    console.log(profile);
 
+    navigate("/admin-panel");
+  };
   const handleSignInClose = () => setSignInOpen(false);
 
   const handleSignUpOpen = () => {
@@ -45,6 +50,8 @@ const Navbar = () => {
   const toggleProfile = () => setProfile((prevState) => !prevState);
 
   const { user, logout } = useUser();
+  console.log(user,"user");
+  
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
@@ -162,7 +169,7 @@ const Navbar = () => {
                         className="dropdown-item hover-underline"
                         to={`/state/${encodeURIComponent(dest.cityName)}`}
                       >
-                        {dest.cityName} 
+                        {dest.cityName}
                       </Link>
                     </li>
                   ))
@@ -192,7 +199,7 @@ const Navbar = () => {
                         className="dropdown-item hover-underline"
                         to={`/state/${encodeURIComponent(dest.cityName)}`}
                       >
-                        {dest.cityName} 
+                        {dest.cityName}
                       </Link>
                     </li>
                   ))
@@ -253,10 +260,26 @@ const Navbar = () => {
                 {user ? (
                   <>
                     <li className="list-unstyled">
-                      <Link className="dropdown-item hover-underline" to="/profile">
+                      <Link
+                        className="dropdown-item hover-underline"
+                        to="/profile"
+                      >
                         My Profile
                       </Link>
                     </li>
+
+                    {/* Show Admin Panel link only if the user has 'admin' role */}
+                    {user?.role?.includes("admin") && (
+                      <li>
+                        <button
+                          className="dropdown-item hover-underline"
+                          onClick={handleAdminPanel}
+                        >
+                          Admin panel
+                        </button>
+                      </li>
+                    )}
+
                     <li>
                       <hr className="dropdown-divider" />
                     </li>
@@ -273,8 +296,16 @@ const Navbar = () => {
                 ) : (
                   <>
                     <li>
+                      {/* <button
+                        className="dropdown-item hover-underline"
+                        onClick={handleAdminPanel}
+                      >
+                        Admin panel
+                      </button> */}
+                    </li>
+                    <li>
                       <button
-                        className="dropdown-item hover-underline "
+                        className="dropdown-item hover-underline"
                         onClick={handleSignInOpen}
                       >
                         Sign In

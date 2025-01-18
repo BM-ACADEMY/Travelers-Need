@@ -8,7 +8,10 @@ const {
   updatePlace,
   deletePlace,
   getPopularDestinations,
-  getImage
+  getImage,
+  getCityDataByName,
+  getAllCities,
+  getSubCitiesByCityName
 } = require("../Controller/placeController");
 
 const router = express.Router();
@@ -19,9 +22,12 @@ const upload = multer({ dest: path.join(__dirname, "..", "temp") });
 // Routes for cities and sub-places
 router.post("/create-place", upload.array("images"), createPlace); // Create city or sub-place
 router.get("/details", getCityDetails); // Get all cities
+router.get("/get-city-details-by-name", getCityDataByName); // Get all cities
+router.get("/get-all-cities", getAllCities); // Get all cities
+router.get("/get-sub-cities-by-cityName", getSubCitiesByCityName);
 router.get("/get-all-popular-place", getPopularDestinations); // Get all cities
 router.get("/get-sub-places", getSubPlaceByName); // Get all sub-places for a city
-router.put("/update-place/:placeId", upload.array("images"), updatePlace); // Update a place
-router.delete("/delete-place/:placeId", deletePlace); // Delete a place
+router.put("/update-place/:placeId", upload.array("images"), updatePlace); 
+router.delete("/delete-place/:placeId", deletePlace); 
 router.get("/get-image", getImage);
 module.exports = router;

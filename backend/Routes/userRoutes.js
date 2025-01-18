@@ -14,12 +14,12 @@ const authenticateToken = require('../Middleware/jsonwebtokenMiddleware'); // Im
 const router = express.Router();
 
 // Routes for user operations
-router.get('/', authenticateToken, getAllUsers); // Get all users
-router.get('/:id', authenticateToken, getUserById); // Get a user by ID
-router.post('/register', createUser); // Create a new user (public, no auth required for registration)
-router.put('/:id', authenticateToken, updateUser); // Update a user by ID
-router.delete('/:id', authenticateToken, deleteUser); // Delete a user by ID
-router.post('/login', loginUser); // Login route does not require authentication
+router.get('/get-all-users', getAllUsers); 
+router.get('/get-user-by-id/:UserById', getUserById); 
+router.post('/register', createUser);
+router.put('/update-user/:id',  updateUser); 
+router.put('/delete-user/:deleteUserId',  deleteUser); 
+router.post('/login', loginUser); 
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 

@@ -87,6 +87,44 @@ exports.getAllAddresses = async (req, res) => {
   }
 };
 
+exports.getAddressForPlaces = async (req, res) => {
+  try {
+    const addresses = await Address.find();
+    console.log(`Fetched addresses:`, addresses);
+
+    // Extract unique states and cities
+    const states = [];
+    const cities = [];
+
+    addresses.forEach(address => {
+      if (address.state && address._id) {
+        // Check if the state is already added
+        if (!states.some(state => state.stateName === address.state)) {
+          states.push({
+            stateName: address.state,
+            _id: address._id
+          });
+        }
+      }
+
+      if (address.city && address._id) {
+        cities.push({
+          cityName: address.city,
+          _id: address._id
+        });
+      }
+    });
+
+    res.json({
+      message: "Addresses grouped successfully",
+      states,
+      cities
+    });
+  } catch (error) {
+    console.error("Error fetching addresses:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
 
 exports.getAllAddressesForTourType = async (req, res) => {
   try {

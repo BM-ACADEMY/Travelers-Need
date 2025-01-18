@@ -1,19 +1,18 @@
-const mongoose = require("mongoose");
+// Blog Model (MongoDB Schema)
+const mongoose = require('mongoose');
 
 const blogSchema = new mongoose.Schema({
-  title: { type: String, required: true, maxlength: 200 },
-  content: { type: String, required: true },
+  title: { type: String, required: true },
+  date: { type: Date, default: Date.now },
   author: { type: String, required: true },
-  themeId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Theme", // Reference to Theme schema
-    required: true, // Ensure every blog is associated with a theme
-  },
-  images: { type: [String], default: [] },
-  publishedAt: { type: Date, default: Date.now },
-  isPublished: { type: Boolean, default: false },
-  metaDescription: { type: String, maxlength: 160 },
-  views: { type: Number, default: 0 },
-}, { timestamps: true });
+  images: [{ type: String }], // URL or file path to image
+  description: { type: String, required: true },
+  cityDetails: [{
+    cityName: { type: String, required: true }, 
+    description: { type: String, required: true },
+    link:{type:String,required:true}
+  }]
+});
 
-module.exports = mongoose.model("Blog", blogSchema);
+const Blog = mongoose.model('Blog', blogSchema);
+module.exports = Blog;

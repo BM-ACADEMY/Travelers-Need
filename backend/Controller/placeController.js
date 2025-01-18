@@ -20,48 +20,49 @@ exports.createPlace = async (req, res) => {
       state,
       type, // city or sub_place
       parentPlace,
-      bestTimetoVisit,
-      idealTripDuration,
-      distance,
-      placeLocation,
-      travelTipes,
-      transportOption,
       transport,
       networkSettings,
       weatherInfo,
       placeTitle,
-      mustVisit,
+      placePopular,
+      placeTop,
+      mostPopular,
+      idealTripDuration,
     } = req.body;
+    console.log(req.body,'body');
+    
 
     // Validate the type
     if (!["city", "sub_place"].includes(type)) {
-      return res
-        .status(400)
-        .json({ message: "Invalid type. Must be 'city' or 'sub_place'." });
+      return res.status(400).json({ message: "Invalid type. Must be 'city' or 'sub_place'." });
     }
 
     // Validate parentPlace for sub_place
     if (type === "sub_place" && !parentPlace) {
-      return res
-        .status(400)
-        .json({ message: "Sub-places must have a parent place." });
+      return res.status(400).json({ message: "Sub-places must have a parent place." });
     }
 
-    // Create folder dynamically for the place
+    // Create folder dynamically
     const placeFolder = await createPlaceFolder(name);
 
-    // Rename and move uploaded files
+    // Move uploaded files to the dynamically created folder
     const images = [];
-    if (req.files) {
+    console.log(req.files,'file');
+    
+    if (req.files && req.files.length > 0) {
       for (const file of req.files) {
         const newFileName = `${Date.now()}-${file.originalname}`;
         const destinationPath = path.join(placeFolder, newFileName);
+
+        // Move file from temp folder to destination
         await fs.move(file.path, destinationPath);
+
+        // Store relative path for the image
         images.push(path.relative(UPLOADS_ROOT, destinationPath));
       }
     }
 
-    // Create a new place document
+    // Save the place details in the database
     const newPlace = new Place({
       name,
       description,
@@ -69,35 +70,81 @@ exports.createPlace = async (req, res) => {
       type,
       parentPlace: type === "sub_place" ? parentPlace : null,
       images,
-      bestTimetoVisit,
-      idealTripDuration,
       transport: transport ? JSON.parse(transport) : [],
       networkSettings: networkSettings ? JSON.parse(networkSettings) : {},
       weatherInfo: weatherInfo ? JSON.parse(weatherInfo) : {},
       placeTitle,
-      distance,
-      placeLocation,
-      travelTipes,
-      transportOption,
-      mustVisit,
+      placePopular,
+      placeTop,
+      mostPopular,
+      idealTripDuration,
     });
 
     await newPlace.save();
 
-    // If sub_place, update the parentPlace's subPlaces field
+    // If sub_place, update the parentPlace
     if (type === "sub_place" && parentPlace) {
       await Place.findByIdAndUpdate(parentPlace, {
         $addToSet: { subPlaces: newPlace._id },
       });
     }
 
-    res
-      .status(201)
-      .json({ message: "Place created successfully", place: newPlace });
+    res.status(201).json({ message: "Place created successfully", place: newPlace });
   } catch (error) {
+    console.error("Error while creating place:", error);
+    res.status(500).json({ error: error.message });
+  }
+
+};
+
+exports.getAllCities = async (req, res) => {
+  try {
+    // Find all places with type "city"
+    const cities = await Place.find({ type: "city" })
+      .populate({
+        path: "state", // Populate address details from the Address model
+        model: "Address",
+      });
+
+    if (!cities || cities.length === 0) {
+      return res.status(404).json({ error: "No cities found." });
+    }
+
+    // Map the results to format them as needed
+    const cityDetails = cities.map((city) => ({
+      _id: city._id,
+      cityName: city.name,
+      description: city.description,
+      type: city.type,
+      placeTop: city.placeTop,
+      images: city.images,
+      bestTimetoVisit: city.bestTimetoVisit,
+      idealTripDuration: city.idealTripDuration,
+      transport: city.transport,
+      networkSettings: city.networkSettings,
+      weatherInfo: city.weatherInfo,
+      placeTitle: city.placeTitle,
+      distance: city.distance,
+      placeLocation: city.placeLocation,
+      travelTips: city.travelTipes,
+      transportOption: city.transportOption,
+      mustVisit: city.mustVisit,
+      placePopular: city.placePopular,
+      mostPopular: city.mostPopular,
+      address: city.state, // Include state details
+    }));
+
+    // Return the cities array
+    res.json({
+      message: "All cities retrieved successfully",
+      data: cityDetails,
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
     res.status(500).json({ error: error.message });
   }
 };
+
 exports.getCityDetails = async (req, res) => {
   try {
     const { stateName, cityName } = req.query;
@@ -280,15 +327,50 @@ exports.getSubPlaceByName = async (req, res) => {
   }
 };
 
-
 // 4. Update a place
+// exports.updatePlace = async (req, res) => {
+//   try {
+//     const { placeId } = req.params;
+//     const updatedData = req.body;
+//       console.log(req.body,'update');
+//       console.log(req.files,'file');
+      
+//     // Handle file uploads
+//     if (req.files) {
+//       const placeFolder = await createPlaceFolder(req.body.name || "default");
+//       const images = [];
+//       for (const file of req.files) {
+//         const newFileName = `${Date.now()}-${file.originalname}`;
+//         const destinationPath = path.join(placeFolder, newFileName);
+//         await fs.move(file.path, destinationPath);
+//         images.push(path.relative(UPLOADS_ROOT, destinationPath));
+//       }
+//       updatedData.images = images;
+//     }
+
+//     const updatedPlace = await Place.findByIdAndUpdate(placeId, updatedData, {
+//       new: true,
+//     });
+
+//     if (!updatedPlace) {
+//       return res.status(404).json({ message: "Place not found" });
+//     }
+
+//     res.status(201).json({ message: "Place updated successfully", place: updatedPlace });
+//   } catch (error) {
+//     res.status(500).json({ error: error.message });
+//   }
+// };
 exports.updatePlace = async (req, res) => {
   try {
     const { placeId } = req.params;
     const updatedData = req.body;
 
-    // Handle file uploads
-    if (req.files) {
+    console.log(req.body, "update");
+    console.log(req.files, "file");
+
+    // Handle file uploads only if req.files exists and is not empty
+    if (req.files && req.files.length > 0) {
       const placeFolder = await createPlaceFolder(req.body.name || "default");
       const images = [];
       for (const file of req.files) {
@@ -297,7 +379,9 @@ exports.updatePlace = async (req, res) => {
         await fs.move(file.path, destinationPath);
         images.push(path.relative(UPLOADS_ROOT, destinationPath));
       }
-      updatedData.images = images;
+      updatedData.images = images; // Only update images if new files are uploaded
+    } else {
+      delete updatedData.images; // Do not overwrite the images field if no new files
     }
 
     const updatedPlace = await Place.findByIdAndUpdate(placeId, updatedData, {
@@ -308,7 +392,7 @@ exports.updatePlace = async (req, res) => {
       return res.status(404).json({ message: "Place not found" });
     }
 
-    res.json({ message: "Place updated successfully", place: updatedPlace });
+    res.status(201).json({ message: "Place updated successfully", place: updatedPlace });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -336,7 +420,7 @@ exports.deletePlace = async (req, res) => {
     const placeFolder = path.join(UPLOADS_ROOT, place.name.replace(/ /g, "_"));
     await fs.remove(placeFolder);
 
-    res.json({ message: "Place deleted successfully" });
+    res.status(201).json({ message: "Place deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -370,3 +454,113 @@ exports.getImage = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+
+exports.getCityDataByName = async (req, res) => {
+  try {
+    const { stateName, cityName, page = 1, limit = 5, search = '' } = req.query;
+
+    if (!stateName || !cityName) {
+      return res
+        .status(400)
+        .json({ error: "stateName and cityName are required parameters." });
+    }
+
+    // Normalize inputs
+    const normalizedStateName = stateName.trim().toLowerCase();
+    const normalizedCityName = cityName.trim().toLowerCase();
+
+    // Find the parent place with type "city"
+    const parentCity = await Place.findOne({
+      type: "city",
+      name: { $regex: new RegExp(`^${normalizedCityName}$`, "i") }, // Case-insensitive match
+    })
+      .populate({
+        path: "state", // Populate address details from the Address model
+        model: "Address",
+      })
+      .populate({
+        path: "subPlaces", // Populate all subPlaces
+        model: "Place",
+      });
+
+    if (!parentCity) {
+      return res.status(404).json({ error: "Parent city not found." });
+    }
+
+    // Fetch all sub-places and apply search filter
+    const filteredSubPlaces = parentCity.subPlaces.filter((subPlace) =>
+      subPlace.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    // Calculate total matching records
+    const totalPlaces = filteredSubPlaces.length;
+
+    // Apply pagination logic
+    const paginatedPlaces = filteredSubPlaces.slice(
+      (page - 1) * limit,
+      page * limit
+    );
+
+    // Format response with pagination metadata
+    res.json({
+      message: "Places retrieved successfully",
+      data: paginatedPlaces, // Current page data
+      total: totalPlaces, // Total matching records
+      page: Number(page), // Current page
+      limit: Number(limit), // Records per page
+      totalPages: Math.ceil(totalPlaces / limit), // Total pages
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+exports.getSubCitiesByCityName = async (req, res) => {
+  try {
+    const { cityName } = req.query;
+
+    if (!cityName) {
+      return res.status(400).json({ error: "City name is required." });
+    }
+
+    // Step 1: Find the city record where type = "city" and name = cityName
+    const city = await Place.findOne({ type: "city", name: cityName }).populate({
+      path: "subPlaces", // Populate the subPlaces array with Place documents
+      model: "Place",
+    });
+
+    if (!city) {
+      return res.status(404).json({ error: "City not found." });
+    }
+
+    // Step 2: Retrieve all sub-cities from the subPlaces array
+    const subCities = city.subPlaces;
+
+    if (!subCities || subCities.length === 0) {
+      return res.status(404).json({ error: "No sub-cities found for the specified city." });
+    }
+
+    // Step 3: Format the response with the necessary fields
+    const subCityDetails = subCities.map((subCity) => ({
+      _id: subCity._id,
+      name: subCity.name,
+      description: subCity.description,
+      type: subCity.type,
+      images: subCity.images,
+    }));
+
+    // Step 4: Return the list of sub-cities
+    res.json({
+      message: "Sub-cities retrieved successfully.",
+      data: subCityDetails,
+    });
+  } catch (error) {
+    console.error("Error:", error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+

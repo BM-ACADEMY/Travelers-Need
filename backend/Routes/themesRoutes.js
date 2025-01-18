@@ -9,6 +9,7 @@ const {
   deleteTheme,
   getThemeDetailsWithTourPlans,
   getImage,
+  getAllThemes
 } = require("../Controller/themesController");
 
 const router = express.Router();
@@ -41,6 +42,8 @@ router.get("/get-all-themes-by-tour-plan", getAllThemesWithTourPlans);
 
 // Retrieve a single theme by ID
 router.get("/get-theme/:themeId", getThemeById);
+
+router.get("/get-all-themes", getAllThemes);
 
 // Update an existing theme with optional file upload
 router.put(

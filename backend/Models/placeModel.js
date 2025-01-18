@@ -1,12 +1,12 @@
 const mongoose = require("mongoose");
 
 const transportSchema = new mongoose.Schema({
-  mode: { type: String, required: true }, // Example: Bus, Train, Flight
-  from: { type: String, required: true }, // Example: Chennai
-  end: { type: String, required: true }, // Example: Chennai
-  distance: { type: Number, required: true }, // Distance in kilometers
+  mode: { type: String  }, // Example: Bus, Train, Flight
+  from: { type: String }, // Example: Chennai
+  end: { type: String }, // Example: Chennai
+  transportDistance: { type: Number }, // Distance in kilometers
   // frequency: { type: String, required: true }, // Example: 10/day
-  duration: { type: String, required: true }, // Example: 4 hours
+  duration: { type: String }, // Example: 4 hours
 });
 
 const networkSettingsSchema = new mongoose.Schema({
@@ -20,8 +20,8 @@ const networkSettingsSchema = new mongoose.Schema({
 const weatherInfoSchema = new mongoose.Schema({
   season: [
     {
-      title: { type: String, required: [true, "Season title is required"] }, // Example: Winter
-      description: { type: String, required: [true, "Season description is required"] }, // Example: Cool and breezy
+      title: { type: String }, // Example: Winter
+      description: { type: String }, // Example: Cool and breezy
     },
   ],
   nearestCity: { type: String }, // Example: Pondicherry
@@ -30,16 +30,17 @@ const weatherInfoSchema = new mongoose.Schema({
 
 const placeSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true }, // Name of the place
-    description: { type: String }, // Description of the place
+    name: { type: String, required: true }, 
+    description: { type: String }, 
     type: {
       type: String,
-      enum: ["city", "sub_place"], // Differentiates between city, main place, and sub-place
+      enum: ["city", "sub_place"], 
       default: "city",
     },
-    state: { type: mongoose.Schema.Types.ObjectId, ref: "Address", required: true }, // Links to city-level data
-    parentPlace: { type: mongoose.Schema.Types.ObjectId, ref: "Place" }, // Hierarchical relationship
-    subPlaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "Place" }], // References sub-places
+
+    state: { type: mongoose.Schema.Types.ObjectId, ref: "Address", required: true },
+    parentPlace: { type: mongoose.Schema.Types.ObjectId, ref: "Place" }, 
+    subPlaces: [{ type: mongoose.Schema.Types.ObjectId, ref: "Place" }], 
     images: {
       type: [String], // Array of image URLs or file paths
       default: [],
@@ -50,9 +51,9 @@ const placeSchema = new mongoose.Schema(
     },
     bestTimetoVisit:{type:String},
     idealTripDuration:{type:String,required:true},
-    transport: [transportSchema], // Embedded Transport Schema
-    networkSettings: networkSettingsSchema, // Embedded Network Settings
-    weatherInfo: weatherInfoSchema, // Embedded Weather Info
+    transport: [transportSchema],
+    networkSettings: networkSettingsSchema, 
+    weatherInfo: weatherInfoSchema, 
     placeTitle:{type:String,required:true},
     distance:{type:String},
     placeLocation:{type:String},
@@ -67,3 +68,6 @@ const placeSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Place", placeSchema);
+
+
+

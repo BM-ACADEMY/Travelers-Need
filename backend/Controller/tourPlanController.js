@@ -31,7 +31,6 @@ exports.createTourPlan = async (req, res) => {
       itPopular,
       itTop,
       itTourPlan,
-      // primeDestinations,
       itinerary,
       inclusions,
       exclusions,
@@ -39,6 +38,7 @@ exports.createTourPlan = async (req, res) => {
       themeId,
       // operator,
     } = req.body;
+console.log(req.body);
 
     // Create folder dynamically for the tour plan
     const tourPlanFolder = await createTourPlanFolder(tourCode);
@@ -93,11 +93,11 @@ exports.getAllTourPlans = async (req, res) => {
   try {
     // Step 1: Fetch all tour plans with necessary relationships populated
     const tourPlans = await TourPlan.find()
-      .populate("addressId", "country state city images startingPrice") // Include startingPrice from address
+      .populate("addressId", "country state city images startingPrice") 
       .populate("startPlace", "name description")
       .populate("endPlace", "name description")
       .populate("themeId", "name description")
-      .lean(); // Fetch as plain objects for better performance
+      .lean(); 
 
     // Step 2: Initialize the result structure
     const categories = {
@@ -422,6 +422,7 @@ exports.getTourPlansByState = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
 exports.getReviewsByState = async (req, res) => {
   try {
     const { stateName } = req.params;
@@ -533,7 +534,6 @@ exports.getReviewsByState = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 3. Get a single tour plan by ID
 exports.getTourPlanById = async (req, res) => {
   try {
@@ -652,6 +652,8 @@ exports.updateTourPlan = async (req, res) => {
     const { tourPlanId } = req.params;
     const updatedData = req.body;
 
+  console.log(req.body, "update");
+    console.log(req.files, "file");
     // Parse and validate array fields, including `images`
     const arrayFields = [
       "itinerary",
@@ -704,7 +706,7 @@ exports.updateTourPlan = async (req, res) => {
       return res.status(404).json({ message: "Tour plan not found" });
     }
 
-    res.json({
+    res.status(201).json({
       message: "Tour plan updated successfully",
       tourPlan: updatedTourPlan,
     });
@@ -727,7 +729,7 @@ exports.deleteTourPlan = async (req, res) => {
     const tourPlanFolder = path.join(UPLOADS_ROOT, deletedTourPlan.tourCode);
     await fs.remove(tourPlanFolder);
 
-    res.json({ message: "Tour plan deleted successfully" });
+    res.status(201).json({ message: "Tour plan deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -747,3 +749,65 @@ exports.getTourPlanImage = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getTourPlansByCity = async (req, res) => {
+  try {
+    const { cityName, title = "" } = req.query;
+    const { page = 1, limit = 10 } = req.query; // Pagination parameters with default values
+
+    console.log("Fetching tour plans for city:", cityName, "and title:", title);
+
+    // Find the address with the matching cityName
+    const address = await Address.findOne({
+      city: new RegExp(`^${cityName}$`, "i"),
+    }).select("country state city description images startingPrice");
+
+    if (!address) {
+      return res
+        .status(404)
+        .json({ message: "No address found for the given city" });
+    }
+
+    // Build the query
+    const query = {
+      addressId: address._id,
+      title: new RegExp(title, "i"), // Case-insensitive search for the title
+    };
+
+    // Fetch paginated tour plans associated with the city and title
+    const tourPlans = await TourPlan.find(query)
+      .populate(
+        "addressId",
+        "country state city description images startingPrice"
+      )
+      .populate("startPlace", "name description")
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean();
+
+    const totalCount = await TourPlan.countDocuments(query);
+
+    if (tourPlans.length === 0) {
+      return res.json({
+        message: "No tour plans found for the given city and title",
+        address,
+      });
+    }
+
+    // Return data with pagination metadata
+    res.status(201).json({
+      message: "Tour plans retrieved successfully",
+      address,
+      tourPlans,
+      pagination: {
+        total: totalCount,
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching tour plans by city:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+

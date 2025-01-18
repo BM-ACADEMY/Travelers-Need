@@ -5,6 +5,7 @@ const {
   getReviewsByPackageId,
   updateReview,
   deleteReview,
+  getAllReviewsForAdminPage
 } = require("../Controller/reviewController");
 
 const router = express.Router();
@@ -14,6 +15,8 @@ router.post("/create-review", createReview); // POST /create-review
 
 // Route to get all reviews
 router.get("/get-all-reviews", getAllReviews); // GET /get-all-reviews
+
+router.get("/get-all-reviews-for-admin-page", getAllReviewsForAdminPage); // GET /get-all-reviews
 
 // Route to get reviews for a specific package
 router.get("/get-reviews-by-package/:packageId", getReviewsByPackageId); // GET /get-reviews-by-package/:packageId

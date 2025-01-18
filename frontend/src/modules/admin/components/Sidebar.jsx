@@ -1,21 +1,21 @@
 import React from "react";
-import { NavLink } from "react-router-dom"; // Use NavLink for active state
+import { NavLink } from "react-router-dom"; 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHome, faCalendar, faUsers, faChartBar, faBriefcase, faComments, faCog } from "@fortawesome/free-solid-svg-icons";
-import { Offcanvas } from "react-bootstrap"; // For mobile sidebar
-import logo from "../../../images/logo.png"; // Add your logo image path here
+import { Offcanvas } from "react-bootstrap"; 
+import logo from "../../../images/logo.png"; 
 import './Sidebar.css';
 
-// Sidebar items data
 const sidebarItems = [
-  { title: "Dashboard", icon: faHome, link: "/" },
-  { title: "Booking", icon: faCalendar, link: "/booking" },
-  { title: "Travelers", icon: faUsers, link: "/travelers" },
-  { title: "Places", icon: faChartBar, link: "/places" },
-  { title: "Tour Packages", icon: faBriefcase, link: "/tour-packages" },
-  { title: "Feedback", icon: faComments, link: "/feedback" },
-  { title: "Support", icon: faComments, link: "/support" },
-  { title: "Settings", icon: faCog, link: "/settings" },
+  { title: "Dashboard", icon: faHome, link: "/admin-panel" },
+  { title: "Booking", icon: faCalendar, link: "/admin-panel/booking" },
+  { title: "Travelers", icon: faUsers, link: "/admin-panel/users" },
+  { title: "Places", icon: faChartBar, link: "/admin-panel/places" },
+  { title: "Tour Packages", icon: faBriefcase, link: "/admin-panel/tour-packages" },
+  { title: "Blog", icon: faBriefcase, link: "/admin-panel/blog" },
+  { title: "Feedback", icon: faComments, link: "/admin-panel/feedback" },
+  { title: "Support", icon: faComments, link: "/admin-panel/support" },
+  { title: "Settings", icon: faCog, link: "/admin-panel/settings" },
 ];
 
 const Sidebar = ({ isOpen, setSidebarOpen }) => {
@@ -43,6 +43,7 @@ const Sidebar = ({ isOpen, setSidebarOpen }) => {
                   color: isActive ? '#fff' : '#333',
                 })}
                 onClick={handleClose}
+                end={item.link === "/admin-panel"} // Only match exactly for the root route
               >
                 <FontAwesomeIcon icon={item.icon} className="me-2" />
                 {item.title}
@@ -57,8 +58,8 @@ const Sidebar = ({ isOpen, setSidebarOpen }) => {
         show={isOpen}
         onHide={handleClose}
         placement="start"
-        backdrop="false" // Disable overlay (no backdrop)
-        scroll={true} // Allows scrolling if content is too long
+        backdrop="false" 
+        scroll={true} 
       >
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Admin Panel</Offcanvas.Title>
@@ -80,6 +81,7 @@ const Sidebar = ({ isOpen, setSidebarOpen }) => {
                     color: isActive ? '#fff' : '#333',
                   })}
                   onClick={handleClose}
+                  end={item.link === "/admin-panel"} // Only match exactly for the root route
                 >
                   <FontAwesomeIcon icon={item.icon} className="me-2" />
                   {item.title}

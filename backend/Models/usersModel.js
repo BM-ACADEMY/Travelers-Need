@@ -45,6 +45,11 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin', 'vendor', 'affiliate'], // Allowed values for roles
     default: ['user'], // Default value is an array containing 'user'
   },
+  isActive: {
+    type: Number,
+    enum: [1, 0], // 1 for active, 0 for inactive
+    default: 1, // Default value is 1 (active)
+  },
   token: {
     type: String, // Store the user's JWT token
     default: null,
@@ -52,12 +57,48 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save middleware to hash the password
+// userSchema.pre('save', async function (next) {
+//   if (!this.isModified('password')) return next();
+
+//   // Hash the password
+//   const salt = await bcrypt.genSalt(10);
+//   this.password = await bcrypt.hash(this.password, salt);
+//   next();
+// });
+
+// // Instance method to compare passwords
+// userSchema.methods.comparePassword = async function (candidatePassword) {
+//   return bcrypt.compare(candidatePassword, this.password);
+// };
+
+// // Instance method to generate and store JWT token
+// userSchema.methods.generateAuthToken = async function () {
+//   const token = jwt.sign(
+//     { id: this._id, email: this.email, role: this.role },
+//     process.env.JWT_SECRET,
+//     { expiresIn: '1d' }
+//   );
+//   this.token = token;
+//   await this.save(); // Save the token to the database
+//   return token;
+// };
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
 
   // Hash the password
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  next();
+});
+
+// Pre-update middleware to hash the password during updates
+userSchema.pre('findOneAndUpdate', async function (next) {
+  const update = this.getUpdate();
+  if (update.password) {
+    // Hash the password if it is being updated
+    const salt = await bcrypt.genSalt(10);
+    update.password = await bcrypt.hash(update.password, salt);
+  }
   next();
 });
 
@@ -77,6 +118,7 @@ userSchema.methods.generateAuthToken = async function () {
   await this.save(); // Save the token to the database
   return token;
 };
+
 
 // Create and export the User model
 const User = mongoose.model('User', userSchema);

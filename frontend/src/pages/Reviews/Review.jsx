@@ -63,9 +63,10 @@ const Review = () => {
 
   return (
     <div className="container mt-5">
-      <div className="text-center">
-        {/* <h1 className="text-dark mb-4">694 Karnataka Tour Reviews</h1> */}
+     <div className="mt-3 mb-3 text-center">
+        <h4 style={{ color: "#ef156c" }}>Reviews  </h4>
       </div>
+      <hr />
       <div>
         {reviews.map((review, index) => (
           <div key={index} className="card p-3 shadow-sm mb-4">

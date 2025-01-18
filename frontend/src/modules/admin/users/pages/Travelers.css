@@ -1,0 +1,16 @@
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* This ensures the icon doesn't interfere with typing */
+  }
+  
+  .input-group {
+    position: relative;
+  }
+  
+  .input-group .form-control {
+    padding-right: 30px; /* Ensure the input text doesn't overlap with the icon */
+  }
+  

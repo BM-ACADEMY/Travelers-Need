@@ -14,9 +14,9 @@ import {
 } from "@fortawesome/free-brands-svg-icons"; // Brand icons
 import '../components/Footer.css';
 
-const Footer = ({ themes, topPackages, internationalDestinations }) => {
+const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
   const currentYear = new Date().getFullYear(); // Get the current year dynamically
-
+  const result = pages.map(page => page.title).join(' | ');
   const handleCall = () => {
     window.location.href = "tel:+919944940051"; // Initiates a call
   };
@@ -117,6 +117,30 @@ const Footer = ({ themes, topPackages, internationalDestinations }) => {
 
         {/* Footer Bottom Section */}
         <hr />
+        <div className="text-center">
+          {pages.map((page, index) => (
+            <React.Fragment key={index}>
+              <Link
+                to={page.link}
+                className="footer-link"
+                // style={{
+                //   textDecoration: "none",
+                //   color: "blue",
+                //   margin: "0 8px", // Add spacing around links
+                // }}
+              >
+                {page.title}
+              </Link>
+              {/* Add vertical line except after the last title */}
+              {index < pages.length - 1 && (
+                <span style={{ color: "gray", margin: "0 8px" }}>|</span>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+ 
+        <hr />
+
         <div className="d-flex justify-content-between align-items-center">
           <p className="mb-0">
             &copy; 2013 - {currentYear} Travelers Need Pvt Ltd.

@@ -1,7 +1,7 @@
 const Review = require("../Models/reviewModel");
 const Booking=require("../Models/bookingModel");
 const TourPlan=require("../Models/tourPlanModel");
-
+const moment = require("moment");
 // 1. Create a new review
 exports.createReview = async (req, res) => {
   try {
@@ -74,6 +74,132 @@ exports.getAllReviews = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+exports.getAllReviewsForAdminPage = async (req, res) => {
+  try {
+    const { page = 1, limit = 10, filter } = req.query;
+    const skip = (page - 1) * limit;
+
+    // Fetch collections
+    const reviews = await Review.find().lean();
+    const bookings = await Booking.find({}, { orderId: 1, packageId: 1 }).lean();
+    const tourPlans = await TourPlan.find({}, { _id: 1, title: 1 }).lean();
+
+    // Match reviews with tour plans
+    let filteredReviews = reviews
+      .map((review) => {
+        const booking = bookings.find((b) => b.orderId === review.bookingId);
+        if (!booking) return null;
+
+        const tourPlan = tourPlans.find((tp) => tp._id.toString() === booking.packageId.toString());
+        if (!tourPlan) return null;
+
+        return {
+          ...review,
+          tourPlan: { title: tourPlan.title },
+        };
+      })
+      .filter(Boolean);
+
+    // Filter by date if requested
+    if (filter) {
+      const today = new Date();
+      filteredReviews = filteredReviews.filter((review) => {
+        const createdAt = new Date(review.createdAt);
+        if (filter === "today") {
+          return createdAt.toDateString() === today.toDateString();
+        } else if (filter === "lastWeek") {
+          const lastWeek = new Date(today);
+          lastWeek.setDate(today.getDate() - 7);
+          return createdAt >= lastWeek && createdAt <= today;
+        } else if (filter === "lastMonth") {
+          const lastMonth = new Date(today);
+          lastMonth.setMonth(today.getMonth() - 1);
+          return createdAt >= lastMonth && createdAt <= today;
+        } else if (filter === "thisYear") {
+          return createdAt.getFullYear() === today.getFullYear();
+        }
+        return true; // "all" or no valid filter
+      });
+    }
+
+    // Paginate reviews
+    const paginatedReviews = filteredReviews.slice(skip, skip + limit);
+    const totalPages = Math.ceil(filteredReviews.length / limit);
+
+    // Calculate monthly review counts
+    const monthlyReviewCounts = filteredReviews.reduce((acc, review) => {
+      const month = moment(review.createdAt).format("MMMM YYYY"); // Format as 'Month Year'
+      acc[month] = (acc[month] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Prepare months for the bar chart, ensuring all months are included
+    const allMonths = [];
+    for (let i = 0; i < 12; i++) {
+      const month = moment().subtract(i, "months").format("MMMM YYYY");
+      allMonths.push(month);
+    }
+
+    // Add months with no reviews, setting count to 0
+    const barChartData = {
+      labels: allMonths,
+      datasets: [
+        {
+          label: "Review Counts Per Month",
+          data: allMonths.map((month) => monthlyReviewCounts[month] || 0),
+          backgroundColor: "#ff6f61", // Example color
+        },
+      ],
+    };
+
+    // Calculate rating counts
+    const ratingCounts = filteredReviews.reduce(
+      (acc, review) => {
+        if (review.tourRating <= 2) acc.poor++;
+        else if (review.tourRating <= 4) acc.good++;
+        else acc.excellent++;
+        return acc;
+      },
+      { poor: 0, good: 0, excellent: 0 }
+    );
+
+    // Calculate overall rating text
+    let overallRatingText = "";
+    const { poor, good, excellent } = ratingCounts;
+    if (excellent >= good && excellent >= poor) {
+      overallRatingText = "Excellent";
+    } else if (good >= poor) {
+      overallRatingText = "Good";
+    } else {
+      overallRatingText = "Poor";
+    }
+
+    // Average rating
+    const averageRating =
+      filteredReviews.length > 0
+        ? (
+            filteredReviews.reduce((sum, review) => sum + review.tourRating, 0) /
+            filteredReviews.length
+          ).toFixed(1)
+        : "0.0";
+
+    res.status(200).json({
+      message: "Reviews retrieved successfully",
+      reviews: paginatedReviews,
+      currentPage: parseInt(page),
+      totalPages,
+      totalReviews: filteredReviews.length,
+      ratingCounts,
+      averageRating,
+      overallRatingText,
+      barChartData, // Send bar chart data for the frontend
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch reviews.", error: error.message });
+  }
+};
+
 // 3. Get reviews for a specific package
 exports.getReviewsByPackageId = async (req, res) => {
   try {

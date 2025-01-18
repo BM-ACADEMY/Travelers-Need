@@ -14,7 +14,7 @@ export const UserProvider = ({ children }) => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
-        setUser({ name:decoded.username || "User" ,userId:decoded.id,email:decoded.email});
+        setUser({ name:decoded.username || "User" ,userId:decoded.id,email:decoded.email,role:decoded.role});
       } catch (error) {
         console.error("Error decoding token:", error);
         setUser(null);

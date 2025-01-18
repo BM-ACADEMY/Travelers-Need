@@ -16,45 +16,67 @@ import Top_destinations from "./pages/Destinations/Top_destinations";
 import PackageDetailsPage from "./pages/Destinations/PackageDetailsPage";
 import PlacePage from "./pages/Destinations/PlacePage";
 import ViewItinerariesPage from "./pages/Categories/PackageCard/ViewItinerariesPage";
-
-
+import AdminModule from "./modules/admin/AdminModule"; // Admin module import
+import { ComponentNameProvider } from "./hooks/ComponentnameContext";
+import AdminRoute from "./guard/AdminRoute"; // Import AdminRoute
+import AboutUs from "./pages/staticPages/AboutUs";
+import ContactUs from "./pages/staticPages/ContactUs";
+import FAQ from "./pages/staticPages/FAQ";
+import BookingPolicy from "./pages/staticPages/BookingPolicy";
+import Hiring from "./pages/staticPages/Hiring";
+import PrivacyPolicy from "./pages/staticPages/PrivacyPolicy";
+import TravelAgents from "./pages/staticPages/TravelAgents";
+import TermsAndConditions from "./pages/staticPages/TermsAndConditions";
 
 export default function App() {
   return (
-   
-      <UserProvider>
-        <Router>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/write-review" element={<WriteReview />} />
-              <Route path="/reset-password" element={<Reset_password />} />
-              <Route path="/forgot_password" element={<Forgot_password />} />
-              <Route path="/sign_up" element={<Sign_up />} />
-              <Route path="/sign_in" element={<Sign_in />} />
-              <Route path="/reviews" element={<Review />} />
-              <Route path="/write-review" element={<WriteReview />} />
-              <Route path="/city-view" element={<CityView />} />
-              <Route path="/state/:stateName" element={<StatePage />} />
-              <Route path="/themes/:themename" element={<ThemePage />} />
-              <Route
-                exact
-                path="/tour-plan/:tourCode"
-                element={<PackagePage />}
-              />
-              <Route path="/destinations" element={<Top_destinations />} />
-              <Route
-                path="/details/:stateName/:cityName"
-                element={<PackageDetailsPage />}
-              />
-              <Route path="/place/:placeName" element={<PlacePage />} />
-              <Route
-                path="/view-itineraries/:tourCode"
-                element={<ViewItinerariesPage />}
-              />
-            </Route>
-          </Routes>
-        </Router>
-      </UserProvider>
+    <UserProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Layout />}>
+            <Route path="/" element={<Home />} />
+            <Route path="/write-review" element={<WriteReview />} />
+            <Route path="/reset-password" element={<Reset_password />} />
+            <Route path="/forgot_password" element={<Forgot_password />} />
+            <Route path="/sign_up" element={<Sign_up />} />
+            <Route path="/sign_in" element={<Sign_in />} />
+            <Route path="/reviews" element={<Review />} />
+            <Route path="/city-view" element={<CityView />} />
+            <Route path="/state/:stateName" element={<StatePage />} />
+            <Route path="/themes/:themename" element={<ThemePage />} />
+            <Route path="/tour-plan/:tourCode" element={<PackagePage />} />
+            <Route path="/destinations" element={<Top_destinations />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/contact-us" element={<ContactUs />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/booking-policy" element={<BookingPolicy />} />
+            <Route path="/hiring" element={<Hiring />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/travel-agents-affiliate" element={<TravelAgents />} />
+            <Route path="/terms-conditions" element={<TermsAndConditions />} />
+            <Route
+              path="/details/:stateName/:cityName"
+              element={<PackageDetailsPage />}
+            />
+            <Route path="/place/:placeName" element={<PlacePage />} />
+            <Route
+              path="/view-itineraries/:tourCode"
+              element={<ViewItinerariesPage />}
+            />
+          </Route>
+
+          {/* Admin Route with AdminRoute guard */}
+          <Route
+            path="/admin-panel/*"
+            element={
+              <ComponentNameProvider>
+                <AdminRoute element={<AdminModule />} />
+              </ComponentNameProvider>
+            }
+          />
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }

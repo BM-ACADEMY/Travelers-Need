@@ -11,6 +11,15 @@ const createThemeFolder = async (themeName) => {
   await fs.ensureDir(themeFolder); // Ensure directory exists
   return themeFolder;
 };
+exports.getAllThemes = async (req, res) => {  
+  try {
+    const themes = await Theme.find(); // Fetches all themes from the collection
+
+    res.json({ message: "Themes retrieved successfully", themes });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 exports.createTheme = async (req, res) => {
   try {
@@ -51,7 +60,6 @@ exports.createTheme = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 2. Get all themes
 exports.getAllThemesWithTourPlans = async (req, res) => {
   try {
@@ -113,7 +121,6 @@ exports.getAllThemesWithTourPlans = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 exports.getThemeDetailsWithTourPlans = async (req, res) => {
   try {
     const { themename } = req.params;
@@ -151,7 +158,6 @@ exports.getThemeDetailsWithTourPlans = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 3. Get a theme by ID
 exports.getThemeById = async (req, res) => {
   try {
@@ -168,7 +174,6 @@ exports.getThemeById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 4. Update a theme by ID with new file upload
 exports.updateTheme = async (req, res) => {
   try {
@@ -212,7 +217,6 @@ exports.updateTheme = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 5. Delete a theme by ID
 exports.deleteTheme = async (req, res) => {
   try {
@@ -233,7 +237,6 @@ exports.deleteTheme = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 // 6. Serve an image by theme name and file name
 exports.getImage = async (req, res) => {
   try {

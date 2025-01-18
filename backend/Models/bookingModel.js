@@ -5,8 +5,8 @@ const bookingSchema = new mongoose.Schema(
     orderId: {
       type: String,
       unique: true,
-      required: true, // Ensure orderId is mandatory
-      default: () => `ORDER${Math.random().toString().slice(2, 10)}`, // Generate unique orderId
+      required: true,
+      default: () => `ORDER${Math.random().toString().slice(2, 10)}`, 
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
