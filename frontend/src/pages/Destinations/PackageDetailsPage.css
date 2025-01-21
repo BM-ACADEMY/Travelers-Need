@@ -235,3 +235,9 @@
     margin: 8px 0;
   }
   
+  @media (max-width: 768px) {
+    .overview-section{
+     display: flex;
+     flex-direction: column !important;
+    }
+  }

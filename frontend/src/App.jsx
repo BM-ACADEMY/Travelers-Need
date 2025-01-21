@@ -27,6 +27,11 @@ import Hiring from "./pages/staticPages/Hiring";
 import PrivacyPolicy from "./pages/staticPages/PrivacyPolicy";
 import TravelAgents from "./pages/staticPages/TravelAgents";
 import TermsAndConditions from "./pages/staticPages/TermsAndConditions";
+import BlogList from "./pages/blog/BlogList";
+import BlogPage from "./pages/blog/BlogPage";
+import UserModule from "./modules/user/UserModule";
+import UserRoute from "./guard/userRoute";
+
 
 export default function App() {
   return (
@@ -43,7 +48,7 @@ export default function App() {
             <Route path="/sign_in" element={<Sign_in />} />
             <Route path="/reviews" element={<Review />} />
             <Route path="/city-view" element={<CityView />} />
-            <Route path="/state/:stateName" element={<StatePage />} />
+            <Route path="/tour-packages/:stateName" element={<StatePage />} />
             <Route path="/themes/:themename" element={<ThemePage />} />
             <Route path="/tour-plan/:tourCode" element={<PackagePage />} />
             <Route path="/destinations" element={<Top_destinations />} />
@@ -55,6 +60,8 @@ export default function App() {
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/travel-agents-affiliate" element={<TravelAgents />} />
             <Route path="/terms-conditions" element={<TermsAndConditions />} />
+            <Route path="/blogs" element={<BlogList />} />
+            <Route path="/blog/:title" element={<BlogPage />} />
             <Route
               path="/details/:stateName/:cityName"
               element={<PackageDetailsPage />}
@@ -75,6 +82,16 @@ export default function App() {
               </ComponentNameProvider>
             }
           />
+          
+          <Route
+            path="/user-panel/*"
+            element={
+              <ComponentNameProvider>
+                <UserRoute element={<UserModule />} />
+              </ComponentNameProvider>
+            }
+          />
+          
         </Routes>
       </Router>
     </UserProvider>

@@ -1,0 +1,27 @@
+.header {
+    position: sticky; /* Keeps the header sticky */
+    top: 0; /* Ensures it's at the top of the page */
+    z-index: 1000; /* Keeps the header above other content */
+    background-color: white; /* Keeps the background white */
+    border-bottom: 1px solid #ddd; /* Adds a subtle border at the bottom */
+    transition: box-shadow 0.3s ease; /* Smooth transition for shadow */
+  }
+  
+  .header.scrolled {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Adds a shadow when scrolled */
+  }
+  
+  .search-box input {
+    border-radius: 30px; /* Rounded corners for search input */
+  }
+  
+  .dropdown-menu {
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow on dropdown */
+  }
+  
+  .header.sticky-top {
+    top: 0; /* Keeps it at the top */
+    z-index: 1000; /* Keeps the header above other content */
+  }
+  

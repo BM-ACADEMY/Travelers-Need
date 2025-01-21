@@ -37,6 +37,10 @@ const Navbar = () => {
 
     navigate("/admin-panel");
   };
+  const handleUserPanel=()=>{
+    console.log(profile);
+    navigate("/user-panel")
+  }
   const handleSignInClose = () => setSignInOpen(false);
 
   const handleSignUpOpen = () => {
@@ -167,7 +171,7 @@ const Navbar = () => {
                     <li key={index}>
                       <Link
                         className="dropdown-item hover-underline"
-                        to={`/state/${encodeURIComponent(dest.cityName)}`}
+                        to={`/tour-packages/${encodeURIComponent(dest.cityName)}`}
                       >
                         {dest.cityName}
                       </Link>
@@ -197,7 +201,7 @@ const Navbar = () => {
                     <li key={index}>
                       <Link
                         className="dropdown-item hover-underline"
-                        to={`/state/${encodeURIComponent(dest.cityName)}`}
+                        to={`/tour-packages/${encodeURIComponent(dest.cityName)}`}
                       >
                         {dest.cityName}
                       </Link>
@@ -231,7 +235,7 @@ const Navbar = () => {
             <li className="nav-item">
               <Link
                 className="nav-link text-dark hover-underline"
-                to="/luxury-holidays"
+                to="/blogs"
               >
                 Blogs
               </Link>
@@ -260,12 +264,12 @@ const Navbar = () => {
                 {user ? (
                   <>
                     <li className="list-unstyled">
-                      <Link
+                      <button
                         className="dropdown-item hover-underline"
-                        to="/profile"
+                        onClick={handleUserPanel}
                       >
                         My Profile
-                      </Link>
+                      </button>
                     </li>
 
                     {/* Show Admin Panel link only if the user has 'admin' role */}

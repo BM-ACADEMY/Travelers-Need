@@ -26,7 +26,6 @@ import MapComponent from "../../components/MapComponent";
 import ReusableModal from "../model/ReusableModel";
 import QuoteForm from "../model/QuoteForm";
 
-
 const Home = () => {
   const navigate = useNavigate();
   const [trendingData, setTrendingData] = useState({});
@@ -98,7 +97,7 @@ const Home = () => {
       duration: days,
     });
     navigate(
-      `state/${encodeURIComponent(
+      `tour-packages/${encodeURIComponent(
         destination
       )}?from=${startPlace}&duration=${days}`
     );
@@ -176,9 +175,7 @@ const Home = () => {
   }, []);
   const closeModal = () => setIsModalOpen(false);
 
-  const handleFormSubmit = (formData) =>  closeModal();
-
- 
+  const handleFormSubmit = (formData) => closeModal();
 
   const renderStars = (rating) => "★".repeat(rating) + "☆".repeat(5 - rating);
 
@@ -220,9 +217,9 @@ const Home = () => {
               </p>
 
               {/* Dropdown Fields */}
-              <div className="row g-6">
+              <div className="row g-3 d-flex flex-column flex-md-row align-items-center w-100">
                 {/* Start Place Field */}
-                <div className="col-12 col-md-4 col-lg-3  d-flex align-items-center">
+                <div className="col-12 col-md-4 col-lg-3 d-flex align-items-center">
                   <FontAwesomeIcon
                     icon={faMapMarkerAlt}
                     className="me-2"
@@ -246,7 +243,7 @@ const Home = () => {
                 </div>
 
                 {/* Destination Field */}
-                <div className="col-12 col-md-4 col-lg-3  d-flex align-items-center">
+                <div className="col-12 col-md-4 col-lg-3 d-flex align-items-center">
                   <FontAwesomeIcon
                     icon={faMapMarkerAlt}
                     className="me-2"
@@ -270,7 +267,7 @@ const Home = () => {
                 </div>
 
                 {/* Duration Field */}
-                <div className="col-12 col-md-4 col-lg-3  d-flex align-items-center">
+                <div className="col-12 col-md-4 col-lg-3 d-flex align-items-center">
                   <FontAwesomeIcon
                     icon={faClock}
                     className="me-2"
@@ -294,9 +291,9 @@ const Home = () => {
                 </div>
 
                 {/* Search Button */}
-                <div className="col-lg-3">
+                <div className="col-12 col-md-4 col-lg-3">
                   <button
-                    className="btn w-100 d-flex align-items-center text-white justify-content-center"
+                    className="btn w-100 d-flex align-items-center justify-content-center text-white"
                     style={{ backgroundColor: "#ef156c" }}
                     onClick={handleSearch}
                   >

@@ -73,6 +73,52 @@ exports.getAllBookings = async (req, res) => {
   }
 };
 
+exports.getBookingsByUser = async (req, res) => {
+  const userId = req.params.userId; // Get userId from URL params
+  const { page = 1, limit = 10, search = "" } = req.query; // Extract pagination and search params
+  
+  try {
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Construct the search filter if provided
+    const searchFilter = search
+      ? { "userId.name": { $regex: search, $options: "i" } }
+      : {};
+
+    // Fetch bookings for a user with pagination and search filter
+    const bookings = await Booking.find({ userId, ...searchFilter })
+      .populate("userId", "username email") // Populate user details
+      .populate({
+        path: "packageId", // Populate packageId field
+        select: "title image baseFare duration", // Select the necessary fields from tourPlans collection
+        match: { _id: { $exists: true } } // Ensure the packageId matches an existing package
+      })
+      .skip(skip) // Skip records for pagination
+      .limit(Number(limit)) // Limit records per page
+
+    // Count the total number of bookings for pagination info
+    const totalBookings = await Booking.countDocuments({ userId, ...searchFilter });
+
+    if (!bookings.length) {
+      return res.status(404).json({ message: "No bookings found for this user" });
+    }
+
+    // Return the paginated results with total count for pagination info
+    res.json({
+      message: `Bookings for user ${userId} retrieved successfully`,
+      bookings,
+      totalBookings,
+      currentPage: page,
+      totalPages: Math.ceil(totalBookings / limit), // Calculate total pages
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
+
 // Import moment.js for date manipulation
 exports.getAllBookingsForUpcomingTrips = async (req, res) => {
   try {

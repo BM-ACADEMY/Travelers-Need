@@ -66,7 +66,7 @@ const StatePage = () => {
         setStartPlace(fromValue);
 
         const response = await axios.get(
-          `http://localhost:3000/api/tour-plans/tour-plans/state/${encodeURIComponent(
+          `http://localhost:3000/api/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
             stateName
           )}?from=${fromValue}&duration=${durationValue}`
         );
@@ -128,8 +128,10 @@ const StatePage = () => {
       duration: days,
     });
     try {
+      console.log(days);
+
       const response = await axios.get(
-        `http://localhost:3000/api/tour-plans/tour-plans/state/${encodeURIComponent(
+        `http://localhost:3000/api/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
           stateName
         )}?from=${startPlace}&duration=${days}`
       );
@@ -185,11 +187,11 @@ const StatePage = () => {
         <div
           style={{
             position: "absolute",
-            backgroundColor: "white",
-            padding: "8px",
-            borderRadius: "10px",
             top: "20px",
-            right: "20px",
+            right: window.innerWidth < 768 ? "5px" : "20px", // Adjust for screen width
+            backgroundColor: "white",
+            borderRadius: "10px",
+            padding: "8px",
             display: "flex",
             alignItems: "center",
             gap: "10px",
@@ -198,7 +200,7 @@ const StatePage = () => {
           }}
         >
           <span className="text-dark">Need Quick Quote?</span>
-          <a href="tel:+919944940051" style={{ color: "#fff" }}>
+          <a href="tel:+917799591230" style={{ color: "#fff" }}>
             <FontAwesomeIcon
               icon={faPhone}
               style={{ fontSize: "20px", color: "#ef156c" }}
@@ -239,7 +241,10 @@ const StatePage = () => {
           dangerouslySetInnerHTML={{
             __html: showFullDescription
               ? stateData.description
-              : stateData.description.split("<br>").slice(0, 5).join("<br>"),
+              : stateData.description
+                  .split("<br>")
+                  .slice(0, 5)
+                  .join("<br>"),
           }}
         ></p>
         <button
@@ -268,48 +273,51 @@ const StatePage = () => {
       {/* Top 5 Packages Table */}
       <div className="container mt-5">
         <h2 className="text-center mb-4">Top 5 Packages in {stateName}</h2>
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Package</th>
-              <th>Duration</th>
-              <th>Starting Price</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {topPackages.length > 0 ? (
-              topPackages.map((pkg) => (
-                <tr key={pkg._id}>
-                  <td>{pkg.title}</td>
-                  <td>
-                    {pkg.duration} Days / {Math.max(pkg.duration - 1, 1)} Nights
-                  </td>
-                  <td>₹{pkg.baseFare}</td>
-                  <td>
-                    <a
-                      href={`/tour-plan/${pkg.tourCode}`}
-                      className="btn btn-danger"
-                      style={{ backgroundColor: "#ef156c" }}
-                    >
-                      View Details
-                    </a>
+        <div className="table-responsive">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Duration</th>
+                <th>Starting Price</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topPackages.length > 0 ? (
+                topPackages.map((pkg) => (
+                  <tr key={pkg._id}>
+                    <td>{pkg.title}</td>
+                    <td>
+                      {pkg.duration} Days / {Math.max(pkg.duration - 1, 1)}{" "}
+                      Nights
+                    </td>
+                    <td>₹{pkg.baseFare}</td>
+                    <td>
+                      <a
+                        href={`/tour-plan/${pkg.tourCode}`}
+                        className="btn btn-danger"
+                        style={{ backgroundColor: "#ef156c" }}
+                      >
+                        View Details
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="text-center text-muted">
+                    No Top Packages Found
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="text-center text-muted">
-                  No Top Packages Found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div className=" container d-flex gap-3 mt-2 mb-3">
+      <div className="container d-flex flex-column flex-md-row gap-3 mt-2 mb-3">
         {/* Start Place Field */}
-        <div className="col-12 col-md-4 col-lg-2  d-flex align-items-center">
+        <div className="col-12 col-md-4 col-lg-2 d-flex align-items-center">
           <FontAwesomeIcon
             icon={faMapMarkerAlt}
             className="me-2"
@@ -333,7 +341,7 @@ const StatePage = () => {
         </div>
 
         {/* Duration Field */}
-        <div className="col-12 col-md-4 col-lg-2  d-flex align-items-center">
+        <div className="col-12 col-md-4 col-lg-2 d-flex align-items-center">
           <FontAwesomeIcon
             icon={faClock}
             className="me-2"
@@ -357,7 +365,7 @@ const StatePage = () => {
         </div>
 
         {/* Search Button */}
-        <div className="col-lg-2">
+        <div className="col-12 col-md-4 col-lg-2">
           <button
             className="btn w-100 d-flex align-items-center text-white justify-content-center"
             style={{ backgroundColor: "#ef156c" }}
@@ -372,6 +380,7 @@ const StatePage = () => {
           </button>
         </div>
       </div>
+
       {/* Packages Grid */}
       <div className="container mt-5">
         <h2 className="text-center mb-4">
@@ -380,9 +389,9 @@ const StatePage = () => {
             : `No Tour Plans Found for ${stateName}`}
         </h2>
         {packages.length > 0 ? (
-          <div className="row">
+          <div className="row d-flex flex-column flex-md-row">
             {packages.map((tourPlan) => (
-              <div key={tourPlan._id} className="col-md-6 col-lg-4 mb-4">
+              <div key={tourPlan._id} className="col-12 col-md-6 col-lg-4 mb-4">
                 <PackageCard tourPlan={tourPlan} />
               </div>
             ))}
@@ -392,7 +401,7 @@ const StatePage = () => {
         )}
       </div>
       <div className="mt-4">
-        <ReviewForState stateName={stateName}/>
+        <ReviewForState stateName={stateName} />
       </div>
       <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
         <QuoteForm onSubmit={handleFormSubmit} />

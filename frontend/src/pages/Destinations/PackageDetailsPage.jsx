@@ -121,7 +121,7 @@ const PackageDetailsPage = () => {
   const fetchStateData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/tour-plans/tour-plans/state/${encodeURIComponent(
+        `http://localhost:3000/api/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
           stateName
         )}`
       );
@@ -187,7 +187,7 @@ const PackageDetailsPage = () => {
       case "overview":
         return (
           <div className="overview-section">
-            <div className="w-100 d-flex gap-5">
+            <div className="w-100 d-flex flex-column flex-md-row gap-5">
               {/* About Information */}
               <div className="info-block flex-grow-1">
                 <p>
@@ -364,7 +364,7 @@ const PackageDetailsPage = () => {
           </div>
         );
       case "best-places":
-        return navigator(`/state/${encodeURIComponent(stateName)}`);
+        return navigator(`/tour-packages/${encodeURIComponent(stateName)}`);
       case "best-time":
         return (
           <div className="best-time-container">
@@ -459,7 +459,7 @@ const PackageDetailsPage = () => {
         </ol>
       </nav>
 
-      <div className="row">
+      <div className="row d-flex flex-column flex-md-row g-2">
         {/* Left Column: Main Image + Gallery View */}
         <div className="col-md-6 position-relative">
           {imageURLs?.length > 0 && (
@@ -585,7 +585,8 @@ const PackageDetailsPage = () => {
       </div>
       <div className="container mt-5">
         <h2 className="text-center mb-4">Top 5 Packages in {stateName}</h2>
-        <table className="table table-striped">
+       <div className="table-responsive">
+       <table className="table table-striped">
           <thead>
             <tr>
               <th>Package</th>
@@ -623,6 +624,7 @@ const PackageDetailsPage = () => {
             )}
           </tbody>
         </table>
+       </div>
       </div>
       <a
         onClick={handleNavigateToTourPlan}

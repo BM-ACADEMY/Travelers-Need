@@ -219,3 +219,9 @@
   color: white;
 
 }
+@media (max-width: 768px) {
+  .header-overlay {
+   display: flex;
+   flex-direction: column;
+  }
+}

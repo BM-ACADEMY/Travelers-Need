@@ -5,38 +5,38 @@ import axios from "axios";
 const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
   const [formData, setFormData] = useState({
     title: "",
+    date: "",
     author: "",
     description: "",
-    image: "",
-    cityDetails: [{ cityName: "", cityDescription: "", cityImage: "" }],
+    images: [],
+    cityDetails: [{ cityName: "", description: "", link: "" }],
   });
-
-  const [imageFile, setImageFile] = useState(null);
 
   // Populate form data or reset form based on `blog` and `mode`
   useEffect(() => {
-    if (blog && mode !== "delete") {
+    if (blog) {
       setFormData({
-        title: blog.title,
-        author: blog.author,
-        description: blog.description,
-        image: blog.image || "",
-        cityDetails: blog.cityDetails || [{ cityName: "", cityDescription: "", cityImage: "" }],
+        title: blog.title || "",
+        date: blog.date || "",
+        author: blog.author || "",
+        description: blog.description || "",
+        images: blog.images || [],
+        cityDetails: blog.cityDetails || [{ cityName: "", description: "", link: "" }],
       });
     } else {
       resetForm();
     }
-  }, [blog, mode]);
+  }, [blog]);
 
   const resetForm = () => {
     setFormData({
       title: "",
+      date: "",
       author: "",
       description: "",
-      image: "",
-      cityDetails: [{ cityName: "", cityDescription: "", cityImage: "" }],
+      images: [],
+      cityDetails: [{ cityName: "", description: "", link: "" }],
     });
-    setImageFile(null);
   };
 
   const handleInputChange = (e, index = null) => {
@@ -50,16 +50,10 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImageFile(file);
-    setFormData((prev) => ({ ...prev, image: file ? file.name : "" }));
-  };
-
   const handleAddCity = () => {
     setFormData((prev) => ({
       ...prev,
-      cityDetails: [...prev.cityDetails, { cityName: "", cityDescription: "", cityImage: "" }],
+      cityDetails: [...prev.cityDetails, { cityName: "", description: "", link: "" }],
     }));
   };
 
@@ -69,38 +63,13 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
   };
 
   const handleSubmit = () => {
-    const { title, author, description, cityDetails } = formData;
-    const data = { title, author, description, cityDetails };
-
-    if (imageFile) {
-      const uploadData = new FormData();
-      uploadData.append("image", imageFile);
-
-      axios
-        .post("http://localhost:5000/api/upload", uploadData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        })
-        .then((response) => {
-          data.image = response.data.imageUrl;
-          submitBlogData(data);
-        })
-        .catch((error) => console.error("Error uploading image:", error));
-    } else {
-      submitBlogData(data);
-    }
-  };
-
-  const submitBlogData = (data) => {
     if (mode === "edit") {
-      axios.patch(`http://localhost:3000/api/blogs/update-blog/${blog._id}`, data).then((response) => {
-        setBlogs((prev) => prev.map((b) => (b._id === blog._id ? response.data : b)));
-        onHide();
-      });
-    } else {
-      axios.post("http://localhost:3000/api/blogs/create-blog", data).then((response) => {
-        setBlogs((prev) => [...prev, response.data]);
-        onHide();
-      });
+      axios
+        .patch(`http://localhost:3000/api/blogs/update-blog/${blog._id}`, formData)
+        .then((response) => {
+          setBlogs((prev) => prev.map((b) => (b._id === blog._id ? response.data : b)));
+          onHide();
+        });
     }
   };
 
@@ -115,7 +84,7 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
     <Modal show={show} onHide={onHide} onExited={resetForm}>
       <Modal.Header closeButton>
         <Modal.Title>
-          {mode === "edit" ? "Edit Blog" : mode === "view" ? "View Blog" : "Confirm Delete"}
+          {mode === "view" ? "View Blog" : mode === "edit" ? "Edit Blog" : "Confirm Delete"}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -123,6 +92,29 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
           <div>
             <p>Are you sure you want to delete this blog?</p>
             <p><strong>{formData.title}</strong></p>
+          </div>
+        ) : mode === "view" ? (
+          <div>
+            <h5>{formData.title}</h5>
+            <p><strong>Date:</strong> {new Date(formData.date).toLocaleDateString()}</p>
+            <p><strong>Author:</strong> {formData.author}</p>
+            <p>{formData.description}</p>
+            <div>
+              <h6>Images</h6>
+              {formData.images.map((img, index) => (
+                <img key={index} src={`http://localhost:3000/${img}`} alt="Blog" style={{ width: "100px", margin: "5px" }} />
+              ))}
+            </div>
+            <div>
+              <h6>City Details</h6>
+              {formData.cityDetails.map((city, index) => (
+                <div key={index}>
+                  <p><strong>{city.cityName}</strong></p>
+                  <p>{city.description}</p>
+                  <a href={city.link} target="_blank" rel="noopener noreferrer">Learn More</a>
+                </div>
+              ))}
+            </div>
           </div>
         ) : (
           <Form>
@@ -133,17 +125,6 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
-                disabled={mode === "view"}
-              />
-            </Form.Group>
-            <Form.Group>
-              <Form.Label>Author</Form.Label>
-              <Form.Control
-                type="text"
-                name="author"
-                value={formData.author}
-                onChange={handleInputChange}
-                disabled={mode === "view"}
               />
             </Form.Group>
             <Form.Group>
@@ -154,7 +135,6 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
                 rows={3}
                 value={formData.description}
                 onChange={handleInputChange}
-                disabled={mode === "view"}
               />
             </Form.Group>
             <Form.Label>City Details</Form.Label>
@@ -167,63 +147,56 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
                     name="cityName"
                     value={city.cityName}
                     onChange={(e) => handleInputChange(e, index)}
-                    disabled={mode === "view"}
                   />
                 </Form.Group>
                 <Form.Group>
                   <Form.Label>City Description</Form.Label>
                   <Form.Control
                     as="textarea"
-                    name="cityDescription"
+                    name="description"
                     rows={3}
-                    value={city.cityDescription}
+                    value={city.description}
                     onChange={(e) => handleInputChange(e, index)}
-                    disabled={mode === "view"}
                   />
                 </Form.Group>
                 <Form.Group>
-                  <Form.Label>City Image</Form.Label>
+                  <Form.Label>Link</Form.Label>
                   <Form.Control
-                    type="text"
-                    name="cityImage"
-                    value={city.cityImage}
+                    type="url"
+                    name="link"
+                    value={city.link}
                     onChange={(e) => handleInputChange(e, index)}
-                    disabled={mode === "view"}
                   />
                 </Form.Group>
-                {mode === "edit" && (
-                  <Button variant="danger" onClick={() => handleRemoveCity(index)} className="mt-2">
-                    Remove City
-                  </Button>
-                )}
+                <Button variant="danger" onClick={() => handleRemoveCity(index)} className="mt-2">
+                  Remove City
+                </Button>
               </div>
             ))}
-            {mode === "edit" && (
-              <>
-                <Button variant="success" onClick={handleAddCity} className="mt-3">
-                  Add City
-                </Button>
-                <Form.Group className="mt-3">
-                  <Form.Label>Upload New Image (Optional)</Form.Label>
-                  <Form.Control type="file" onChange={handleImageChange} />
-                </Form.Group>
-              </>
-            )}
+            <Button variant="success" onClick={handleAddCity} className="mt-3">
+              Add City
+            </Button>
           </Form>
         )}
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={onHide}>
+        {!mode === "view" && (
+          <Button variant="secondary" onClick={onHide}>
           Close
         </Button>
+        )}
         {mode === "delete" ? (
           <Button variant="danger" onClick={handleDeleteBlog}>
             Confirm Delete
           </Button>
-        ) : (
-          <Button variant="primary" onClick={handleSubmit} disabled={mode === "view"}>
-            Save Changes
-          </Button>
+        ) : (<>
+         {!mode ==="view" && (
+          <Button variant="primary" onClick={handleSubmit}>
+          Save Changes
+        </Button>
+        )}
+        </>
+       
         )}
       </Modal.Footer>
     </Modal>

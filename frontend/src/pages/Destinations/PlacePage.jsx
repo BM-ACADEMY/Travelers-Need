@@ -81,7 +81,7 @@ const PlacePage = () => {
           {placeDetails.placeTitle || placeDetails.name}
         </h3>
       </div>
-      <div className="row">
+      <div className="row ">
         {/* Image and Details */}
         <div className="col-md-6">
           {placeDetails.images && placeDetails.images.length > 0 && (

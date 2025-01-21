@@ -26,7 +26,7 @@ router.get("/get-all-tour-plans", getAllTourPlans); // Retrieve all tour plans
 router.get("/get-all-tour-plans-for-search", getAllTourPlansForSearch); // Retrieve all tour plans
 router.get("/get-all-tour-plans-for-search-by-state/:stateName", getTourPlanByStateSearch); // Retrieve all tour plans
 router.get("/get-all-tour-plan-reviews-by-state/:stateName", getReviewsByState); // Retrieve all tour plans
-router.get("/tour-plans/state/:stateName", getTourPlansByState);
+router.get("/tour-plans/tour-packages/:stateName", getTourPlansByState);
 router.get("/get-all-tour-plans-for-search-by-city", getTourPlansByCity);
 
 

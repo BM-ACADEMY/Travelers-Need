@@ -1,0 +1,13 @@
+/* For large screens (e.g., 992px and above) */
+.img-responsive {
+    width: 60vw; /* Default for large screens */
+    height: auto;
+  }
+  
+  /* For small screens (e.g., below 768px) */
+  @media (max-width: 768px) {
+    .img-responsive {
+      width: 98vw !important; /* 98% of the viewport width for small screens */
+    }
+  }
+  

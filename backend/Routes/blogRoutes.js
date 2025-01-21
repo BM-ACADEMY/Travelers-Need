@@ -8,6 +8,7 @@ const {
   updateBlog,
   deleteBlog,
   getImage,
+  getBlogByTitle
 } = require("../Controller/blogController");
 
 const router = express.Router();
@@ -21,6 +22,7 @@ const upload = multer({
 // Routes for blog management
 router.post("/create-blog", upload.array("images"), createBlog); // Create a new blog
 router.get("/get-all-blogs", getAllBlogs); // Get all blogs
+router.get("/get-blog-title/:title", getBlogByTitle); // Get all blogs
 router.get("/get-blog/:id", getBlogById); // Get a specific blog by ID
 router.put("/update-blog/:id", upload.array("images"), updateBlog); // Update a blog by ID
 router.delete("/delete-blog/:id", deleteBlog); // Delete a blog by ID

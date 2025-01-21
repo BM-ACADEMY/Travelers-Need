@@ -1,12 +1,13 @@
-import React from 'react';
+import React,{useEffect,useState} from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
+import axios from 'axios';
 
 const Layout = () => {
-  const themes = ["Honeymoon", "Hill Stations", "Wildlife", "Pilgrimage", "Beach", "Heritage", "Adventure"];
-  const topPackages = ["Coorg", "Ooty", "Goa", "Shimla", "Pondicherry", "Mahabaleshwar", "Chikmagalur"];
-  const internationalDestinations = ["Sri Lanka", "Thailand", "Bali", "Dubai", "Singapore"];
+  const themes = ["Honeymoon", "HillStations", "Wildlife", "Pilgrimage", "Beach", "Heritage"];
+  // const topPackages = ["Coorg", "Ooty", "Goa", "Shimla", "Pondicherry", "Mahabaleshwar", "Chikmagalur"];
+  // const internationalDestinations = ["Sri Lanka", "Thailand", "Bali", "Dubai", "Singapore"];
   const pages = [
     { title: "About Us", link: "/about-us" },
     { title: "Contact Us", link: "/contact-us" },
@@ -18,7 +19,29 @@ const Layout = () => {
     { title: "Privacy Policy", link: "/privacy-policy" },
     { title: "Terms & Conditions", link: "/terms-conditions" },
   ];
+  const [topPackages, setTopPackages] = useState([]);
+    const [internationalDestinations, setInternationalDestinations] = useState(
+      []
+    );
+    const [error, setError] = useState(null);
+    useEffect(() => {
+      const fetchDestinations = async () => {
+        try {
+          const response = await axios.get(
+            "http://localhost:3000/api/address/get-all-addresses-tour-type"
+          );
+          const { domestic, international } = response.data.addresses;
   
+          setTopPackages(domestic);
+          setInternationalDestinations(international);
+        } catch (err) {
+          console.error("Error fetching destinations:", err);
+          setError("Failed to load destinations. Please try again later.");
+        }
+      };
+  
+      fetchDestinations();
+    }, []);
   return (
     <div className="d-flex bg-white flex-column min-vh-100">
       <Header />

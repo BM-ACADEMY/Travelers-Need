@@ -6,7 +6,8 @@ const {
   updateBooking,
   deleteBooking,
   getAllBookingsForUpcomingTrips,
-  getAllBookingsForBookingPage
+  getAllBookingsForBookingPage,
+  getBookingsByUser
 } = require("../Controller/bookingController");
 
 const router = express.Router();
@@ -16,6 +17,7 @@ router.post("/create-booking", createBooking); // POST /create-booking
 
 // Route for getting all bookings
 router.get("/get-all-bookings", getAllBookings); // GET /get-all-bookings
+router.get("/get-all-booking-by-userId/:userId", getBookingsByUser); // GET /get-all-bookings
 
 router.get("/get-all-bookings-for-upcoming-trips", getAllBookingsForUpcomingTrips); // GET /get-all-bookings
 

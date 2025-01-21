@@ -94,7 +94,7 @@ const ThemePage = () => {
           style={{
             position: "absolute",
             top: "20px",
-            right: "20px",
+            right: window.innerWidth < 768 ? "5px" : "20px", // Adjust for screen width
             backgroundColor: "white",
             borderRadius: "10px",
             padding: "8px",
@@ -145,7 +145,10 @@ const ThemePage = () => {
           dangerouslySetInnerHTML={{
             __html: showFullDescription
               ? themeDetails.description
-              : themeDetails.description.split("<br>").slice(0, 4).join("<br>"),
+              : themeDetails.description
+                  .split("<br>")
+                  .slice(0, 4)
+                  .join("<br>"),
           }}
         ></p>
         <button
@@ -161,58 +164,63 @@ const ThemePage = () => {
         <h2 className="text-center mb-4">
           Top 5 Packages for {themeDetails.name}
         </h2>
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th>Package</th>
-              <th>Duration</th>
-              <th>Starting Price</th>
-              <th>Details</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tourPlans.length > 0 ? (
-              tourPlans.slice(0, 5).map((pkg) => (
-                <tr key={pkg._id}>
-                  <td>{pkg.title}</td>
-                  <td>
-                    {pkg.duration} Days / {Math.max(pkg.duration - 1, 1)} Nights
-                  </td>
-                  <td>₹{pkg.baseFare}</td>
-                  <td>
-                    <a
-                      href={`/tour-plan/${pkg.tourCode}`}
-                      className="btn btn-danger"
-                      style={{ backgroundColor: "#ef156c" }}
-                    >
-                      View Details
-                    </a>
+        <div className="table-responsive">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Duration</th>
+                <th>Starting Price</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tourPlans.length > 0 ? (
+                tourPlans.slice(0, 5).map((pkg) => (
+                  <tr key={pkg._id}>
+                    <td>{pkg.title}</td>
+                    <td>
+                      {pkg.duration} Days / {Math.max(pkg.duration - 1, 1)}{" "}
+                      Nights
+                    </td>
+                    <td>₹{pkg.baseFare}</td>
+                    <td>
+                      <a
+                        href={`/tour-plan/${pkg.tourCode}`}
+                        className="btn btn-danger"
+                        style={{ backgroundColor: "#ef156c" }}
+                      >
+                        View Details
+                      </a>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4" className="text-center text-muted">
+                    No Top Packages Found
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" className="text-center text-muted">
-                  No Top Packages Found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Available Tour Plans */}
       <div className="container mt-5">
         <h2 className="text-center mb-4">Available Tour Plans</h2>
-        <div className="row">
-          {tourPlans.length > 0 ? (
-            tourPlans.map((plan) => (
-              <div key={plan._id} className="col-md-6 col-lg-4 mb-4">
-                <PackageCard tourPlan={plan} />
+        <div className="row d-flex flex-column flex-md-row">
+          {tourPlans && tourPlans.length > 0 ? (
+            tourPlans.map((tourPlan) => (
+              <div key={tourPlan._id} className="col-12 col-md-6 col-lg-4 mb-4">
+                <PackageCard tourPlan={tourPlan} />
               </div>
             ))
           ) : (
-            <div className="text-center">No tour plans available.</div>
+            <div className="col-12 text-center text-muted">
+              No Tour Plans Available
+            </div>
           )}
         </div>
       </div>

@@ -101,6 +101,35 @@ exports.getBlogById = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+const formatTitleBack = (formattedTitle) => {
+  return formattedTitle
+    .replace(/_/g, ' ')  // Replace underscores with spaces
+    .replace(/\b\w/g, (char) => char.toUpperCase())  // Capitalize first letter of each word
+    .trim();  // Trim any leading or trailing spaces if any
+};
+
+exports.getBlogByTitle = async (req, res) => {
+  try {
+    const { title } = req.params;
+    const formattedTitle = formatTitleBack(title);
+
+    // Log the formatted title for debugging
+    console.log(`Searching for blog with title: "${formattedTitle}"`);
+
+    // Perform a case-insensitive search using a regular expression
+    const blog = await Blog.findOne({ title: { $regex: new RegExp(`^${formattedTitle}$`, 'i') } });
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found." });
+    }
+
+    res.json({ message: "Blog retrieved successfully", blog });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 
 // 4. Update a blog by ID
 exports.updateBlog = async (req, res) => {
@@ -108,27 +137,36 @@ exports.updateBlog = async (req, res) => {
     const { id } = req.params;
     const updatedData = req.body;
 
+    // Ensure that cityDetails is a valid JSON string
+    if (updatedData.cityDetails) {
+      try {
+        updatedData.cityDetails = JSON.parse(updatedData.cityDetails);
+      } catch (error) {
+        return res.status(400).json({ error: "Invalid JSON format for cityDetails." });
+      }
+    }
+
     // Handle file uploads if provided
-    if (req.files) {
-      const categoryFolder = await createDynamicFolder(
-        updatedData.title || "default"
-      );
+    if (req.files && req.files.length > 0) {
+      const categoryFolder = await createDynamicFolder(updatedData.title || "default");
       const images = [];
       for (const file of req.files) {
         const timestamp = Date.now();
-        const newFileName = `${file.fieldname}-${timestamp}${path.extname(
-          file.originalname
-        )}`;
+        const newFileName = `${file.fieldname}-${timestamp}${path.extname(file.originalname)}`;
         const destinationPath = path.join(categoryFolder, newFileName);
         await fs.move(file.path, destinationPath);
         images.push(path.relative(UPLOADS_ROOT, destinationPath));
       }
-      updatedData.images = images;
+      updatedData.images = images;  // Only update images if new files were uploaded
     }
 
-    const updatedBlog = await Blog.findByIdAndUpdate(id, updatedData, {
-      new: true,
-    });
+    // If no new images are uploaded, keep existing images
+    if (!updatedData.images && currentBlog && currentBlog.images) {
+      updatedData.images = currentBlog.images;  // Retain previous images
+    }
+
+    // Update the blog in the database
+    const updatedBlog = await Blog.findByIdAndUpdate(id, updatedData, { new: true });
     if (!updatedBlog) {
       return res.status(404).json({ message: "Blog not found." });
     }
@@ -138,6 +176,8 @@ exports.updateBlog = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 // 5. Delete a blog by ID
 exports.deleteBlog = async (req, res) => {

@@ -1,10 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPhone,
-  faCommentDots,
-} from "@fortawesome/free-solid-svg-icons"; // Solid icons
+import { faPhone, faCommentDots } from "@fortawesome/free-solid-svg-icons"; // Solid icons
 import {
   faFacebook,
   faTwitter,
@@ -12,11 +9,12 @@ import {
   faYoutube,
   faWhatsapp,
 } from "@fortawesome/free-brands-svg-icons"; // Brand icons
-import '../components/Footer.css';
+import "../components/Footer.css";
+import TravelChatbot from "../modules/admin/chatbot/TravelChartbot";
 
-const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
+const Footer = ({ themes, topPackages, internationalDestinations, pages }) => {
   const currentYear = new Date().getFullYear(); // Get the current year dynamically
-  const result = pages.map(page => page.title).join(' | ');
+  const result = pages.map((page) => page.title).join(" | ");
   const handleCall = () => {
     window.location.href = "tel:+919944940051"; // Initiates a call
   };
@@ -26,9 +24,14 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
     window.open(`https://wa.me/${phoneNumber.replace("+", "")}`, "_blank"); // Redirects to WhatsApp chat
   };
 
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // Handle the opening and closing of the chatbot
   const handleChatBot = () => {
-    // Trigger the AI Chatbot functionality (You can integrate your chatbot here)
-    alert("Opening AI Chatbot..."); // Replace with your chatbot integration
+    setIsChatOpen((prev) => !prev); // Toggle the state
+  };
+  const handleCloseChatBot = () => {
+    setIsChatOpen(false); // Close the chatbot
   };
 
   return (
@@ -40,7 +43,7 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
             <h5 className="fw-bold">Explore</h5>
             <ul className="list-unstyled">
               <li>
-                <Link to="/tour-packages" className="footer-link">
+                <Link to="/" className="footer-link">
                   Tour Packages
                 </Link>
               </li>
@@ -65,7 +68,7 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
                 </Link>
               </li> */}
               <li>
-                <Link to="/blog" className="footer-link">
+                <Link to="/blogs" className="footer-link">
                   Blog
                 </Link>
               </li>
@@ -78,7 +81,10 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
             <ul className="list-unstyled">
               {themes?.map((theme, index) => (
                 <li key={index}>
-                  <Link to={`/themes/${theme.toLowerCase()}`} className="footer-link">
+                  <Link
+                    to={`/themes/${theme.toLowerCase()}`}
+                    className="footer-link"
+                  >
                     {theme}
                   </Link>
                 </li>
@@ -92,8 +98,11 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
             <ul className="list-unstyled">
               {topPackages?.map((pkg, index) => (
                 <li key={index}>
-                  <Link to={`/state/${pkg.toLowerCase()}`} className="footer-link">
-                    {pkg} Packages
+                  <Link
+                    to={`/tour-packages/${pkg.cityName}`}
+                    className="footer-link"
+                  >
+                    {pkg.cityName} Packages
                   </Link>
                 </li>
               ))}
@@ -106,8 +115,11 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
             <ul className="list-unstyled">
               {internationalDestinations?.map((destination, index) => (
                 <li key={index}>
-                  <Link to={`/state/${destination.toLowerCase()}`} className="footer-link">
-                    {destination}
+                  <Link
+                    to={`/tour-packages/${destination.cityName.toLowerCase()}`}
+                    className="footer-link"
+                  >
+                    {destination.cityName}
                   </Link>
                 </li>
               ))}
@@ -138,7 +150,7 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
             </React.Fragment>
           ))}
         </div>
- 
+
         <hr />
 
         <div className="d-flex justify-content-between align-items-center">
@@ -148,16 +160,36 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
 
           {/* Social Media Icons */}
           <div className="social-icons d-flex gap-3">
-            <a href="https://facebook.com" target="_blank" rel="noreferrer" className="footer-icon">
+            <a
+              href="https://facebook.com"
+              target="_blank"
+              rel="noreferrer"
+              className="footer-icon"
+            >
               <FontAwesomeIcon icon={faFacebook} size="lg" />
             </a>
-            <a href="https://youtube.com" target="_blank" rel="noreferrer" className="footer-icon">
+            <a
+              href="https://youtube.com"
+              target="_blank"
+              rel="noreferrer"
+              className="footer-icon"
+            >
               <FontAwesomeIcon icon={faYoutube} size="lg" />
             </a>
-            <a href="https://twitter.com" target="_blank" rel="noreferrer" className="footer-icon">
+            <a
+              href="https://twitter.com"
+              target="_blank"
+              rel="noreferrer"
+              className="footer-icon"
+            >
               <FontAwesomeIcon icon={faTwitter} size="lg" />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noreferrer" className="footer-icon">
+            <a
+              href="https://instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              className="footer-icon"
+            >
               <FontAwesomeIcon icon={faInstagram} size="lg" />
             </a>
           </div>
@@ -165,16 +197,63 @@ const Footer = ({ themes, topPackages, internationalDestinations,pages }) => {
       </div>
 
       {/* Right Side Corner Floating Icons */}
-      <div className="floating-icons">
+      {/* <div className="floating-icons">
         <div className="icon" onClick={handleCall} title="Call">
           <FontAwesomeIcon icon={faPhone} size="lg" />
         </div>
         <div className="icon" onClick={handleWhatsApp} title="WhatsApp">
-          <FontAwesomeIcon icon={faWhatsapp} size="lg" style={{ color: "#25D366" }} />
+          <FontAwesomeIcon
+            icon={faWhatsapp}
+            size="lg"
+            style={{ color: "#25D366" }}
+          />
         </div>
-        <div className="icon" onClick={handleChatBot} title="Chatbot">
-          <FontAwesomeIcon icon={faCommentDots} size="lg" />
+        <div>
+          <div className="icon" onClick={handleChatBot} title="Chatbot">
+            <FontAwesomeIcon icon={faCommentDots} size="lg" />
+          </div>
+
+          {/* Conditionally render TravelChatbot *
+          {isChatOpen && <TravelChatbot onClose={handleCloseChatBot} />
         </div>
+      </div> */}
+
+      <div className="floating-icons">
+        {/* Right Side Corner Floating Icons */}
+        {!isChatOpen && (
+          <>
+            <div className="icon" onClick={handleChatBot} title="Chatbot">
+              <FontAwesomeIcon icon={faCommentDots} size="lg" />
+            </div>
+            <div
+              className="icon"
+              onClick={() => (window.location.href = "tel:+919944940051")}
+              title="Call"
+            >
+              <FontAwesomeIcon icon={faPhone} size="lg" />
+            </div>
+            <div
+              className="icon"
+              onClick={() =>
+                window.open(`https://wa.me/+919944940051`, "_blank")
+              }
+              title="WhatsApp"
+            >
+              <FontAwesomeIcon
+                icon={faWhatsapp}
+                size="lg"
+                style={{ color: "#25D366" }}
+              />
+            </div>
+          </>
+        )}
+
+        {/* Conditionally render TravelChatbot and close it */}
+        {isChatOpen && (
+          <div>
+            <TravelChatbot onClose={handleCloseChatBot} />
+          </div>
+        )}
       </div>
     </footer>
   );

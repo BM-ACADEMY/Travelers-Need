@@ -1,0 +1,45 @@
+/* Sidebar styling */
+.desktop-sidebar {
+    background-color: #dce0e1;
+    width: 250px;
+    padding: 1rem;
+    margin-top: 70px !important;
+    padding-top: 0;
+    box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+  }
+  
+  .sidebar-logo {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .sidebar-logo img {
+    height: 120px;
+    max-width: 120px; /* Set a max width for the logo */
+  }
+  
+  /* Style the sidebar links */
+  .sidebar-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  
+  .sidebar-link:hover {
+    background-color: #cccaca; /* Hover effect */
+    color: #fff;
+  }
+  
+  /* Mobile Sidebar Styling */
+  @media (max-width: 768px) {
+    .desktop-sidebar {
+      display: none;
+    }
+  }
+
+  

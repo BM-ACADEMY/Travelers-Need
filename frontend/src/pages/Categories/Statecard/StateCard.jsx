@@ -5,7 +5,7 @@ import "../Statecard/StateCard.css"; // Import custom CSS for animations
 
 const StateCard = ({ stateName, stateImage, startingPrice, cityCount }) => {
   return (
-   <Link   to={`/state/${encodeURIComponent(stateName)}`}
+   <Link   to={`/tour-packages/${encodeURIComponent(stateName)}`}
    className="text-decoration-none">
     <div className="shadow-sm border-0  card state-card ">
       {/* Image */}
