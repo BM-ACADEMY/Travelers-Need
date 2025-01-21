@@ -60,9 +60,8 @@ const TourPlanDetails = ({ tourPlan }) => {
     startPlace = {},
     endPlace = {},
     itinerary = [],
-    addressId={}
+    addressId = {},
   } = tourPlan;
-
 
   // Generate the image URLs
   const packageImageURLs = images.map((imagePath) => {
@@ -87,9 +86,8 @@ const TourPlanDetails = ({ tourPlan }) => {
     navigate(`/tour-plan/${formattedName}`);
   };
   // Format the title
-  const formattedTitle = `${title.toUpperCase()} (FROM ${
-    startPlace.city || "START CITY"
-  })`;
+  const formattedTitle = `${title.toUpperCase()} (FROM ${startPlace.city ||
+    "START CITY"})`;
 
   return (
     <div style={{ padding: "20px" }}>
@@ -133,7 +131,7 @@ const TourPlanDetails = ({ tourPlan }) => {
         <p>
           <strong>Total Places Visited:</strong> {totalPlacesVisited}
         </p>
-        <div className="d-flex gap-1 align-content-center">
+        <div className="d-flex gap-1 align-content-center flex-wrap">
           <b>Tours Starts from</b>{" "}
           <p style={{ textDecoration: "line-through", margin: "0 10px" }}>
             ₹ {origFare}
@@ -181,77 +179,50 @@ const TourPlanDetails = ({ tourPlan }) => {
             {day.places.map((place, placeIndex) => (
               <div
                 key={place._id}
-                style={{
-                  display: "flex",
-                  margin: "20px 0",
-                  border: "1px solid #ddd",
-                  borderRadius: "8px",
-                  overflow: "hidden",
-                }}
+                className="d-flex flex-column flex-md-row border rounded overflow-hidden mb-3"
               >
                 {/* Left Image */}
-                {place.images && place.images.length > 0 && (
-                  <img
-                    src={constructImageURL(place.images[0])}
-                    alt={place.name}
-                    style={{
-                      width: "200px",
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
+                <img
+                  src={constructImageURL(place.images[0])}
+                  alt={place.name}
+                  className="img-fluid d-block"
+                  style={{
+                    width: "100%", // Ensures full width in its container
+                    maxWidth: window.innerWidth <= 768 ? "100vw" : "200px", // Apply 100vw for small screens and 200px for larger screens
+                    objectFit: "cover",
+                  }}
+                />
 
                 {/* Right Content */}
-                <div style={{ flex: 1, padding: "15px", position: "relative" }}>
-                  <h3 style={{ color: "#ef156c" }}>{place.name}</h3>
+                <div className="flex-grow-1 p-3 position-relative">
+                  <h3 className="text-danger">{place.name}</h3>
                   <div
+                    className={`overflow-${
+                      expandedStates[placeIndex] ? "auto" : "hidden"
+                    }`}
                     style={{
                       fontSize: "16px",
                       lineHeight: "1.5",
                       color: "#555",
-                      maxHeight: "7.5em", // Fixed height for both states (approx 5 lines)
-                      overflowY: expandedStates[placeIndex]
-                        ? "scroll"
-                        : "hidden", // Enable scroll only when expanded
-                      textOverflow: "ellipsis",
-                      scrollbarWidth: "thin", // Firefox
-                      scrollbarColor: "#ef156c transparent", // Firefox
+                      maxHeight: "7.5em", // Fixed height
                     }}
-                    className="custom-scrollbar" // Apply custom scrollbar styling
                     dangerouslySetInnerHTML={{
                       __html: formatDescription(place.description),
                     }}
                   ></div>
 
-                  <div className="d-flex gap-3">
+                  <div className="d-flex gap-2 mt-2">
                     <button
                       onClick={() => handleToggle(placeIndex)}
-                      style={{
-                        backgroundColor: "#ef156c",
-                        color: "white",
-                        border: "none",
-                        padding: "8px 12px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        marginTop: "10px",
-                      }}
+                      className="btn btn-danger text-white"
                     >
                       {expandedStates[placeIndex] ? "Read Less" : "Read More"}
                     </button>
                     <button
                       onClick={() => handlePlaceDetails(place.name)}
-                      style={{
-                        borderColor: "#ef156c",
-                        color: "#ef156c",
-                        border: "1px solid",
-                        padding: "8px 12px",
-                        borderRadius: "5px",
-                        cursor: "pointer",
-                        marginTop: "10px",
-                        backgroundColor: "white",
-                      }}
+                      className="btn btn-outline-danger"
                     >
-                      view Details
+                      View Details
                     </button>
                   </div>
                 </div>
@@ -261,7 +232,7 @@ const TourPlanDetails = ({ tourPlan }) => {
         ))}
       </div>
       <div className="mt-3">
-      <ReviewForState stateName={addressId?.state}/>
+        <ReviewForState stateName={addressId?.state} />
       </div>
       <ReusableModal isOpen={isModalOpen} onClose={closeModal}>
         <QuoteForm onSubmit={handleFormSubmit} />
@@ -305,7 +276,6 @@ const ViewItinerariesPage = () => {
     <div>
       {packageDetails ? (
         <TourPlanDetails tourPlan={packageDetails} />
-       
       ) : (
         <p>No tour plan data available.</p>
       )}

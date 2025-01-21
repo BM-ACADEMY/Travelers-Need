@@ -1,16 +1,23 @@
 import React from "react";
-import { NavLink } from "react-router-dom"; 
+import { NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHome, faCalendar, faUsers, faChartBar, faBriefcase, faComments, faCog } from "@fortawesome/free-solid-svg-icons";
-import { Offcanvas } from "react-bootstrap"; 
-import logo from "../../../images/logo.png"; 
-import './Sidebar.css';
+import {
+  faHome,
+  faCalendar,
+  faCog,
+  faComments,
+  faSignOutAlt,
+} from "@fortawesome/free-solid-svg-icons";
+import { Offcanvas } from "react-bootstrap";
+import logo from "../../../images/logo.png";
+import "./Sidebar.css";
 
 const sidebarItems = [
   { title: "Dashboard", icon: faHome, link: "/user-panel" },
   { title: "Booking", icon: faCalendar, link: "/user-panel/booking" },
   { title: "Support", icon: faComments, link: "/user-panel/support" },
   { title: "Settings", icon: faCog, link: "/user-panel/settings" },
+  { title: "Logout", icon: faSignOutAlt, link: "/" },
 ];
 
 const Sidebar = ({ isOpen, setSidebarOpen }) => {
@@ -34,8 +41,8 @@ const Sidebar = ({ isOpen, setSidebarOpen }) => {
                 to={item.link}
                 className="sidebar-link"
                 style={({ isActive }) => ({
-                  backgroundColor: isActive ? '#ef156c' : '',
-                  color: isActive ? '#fff' : '#333',
+                  backgroundColor: isActive ? "#ef156c" : "",
+                  color: isActive ? "#fff" : "#333",
                 })}
                 onClick={handleClose}
                 end={item.link === "/user-panel"} // Only match exactly for the root route
@@ -53,8 +60,8 @@ const Sidebar = ({ isOpen, setSidebarOpen }) => {
         show={isOpen}
         onHide={handleClose}
         placement="start"
-        backdrop="false" 
-        scroll={true} 
+        backdrop="false"
+        scroll={true}
       >
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>Admin Panel</Offcanvas.Title>
@@ -72,8 +79,8 @@ const Sidebar = ({ isOpen, setSidebarOpen }) => {
                   to={item.link}
                   className="sidebar-link"
                   style={({ isActive }) => ({
-                    backgroundColor: isActive ? '#ef156c' : '',
-                    color: isActive ? '#fff' : '#333',
+                    backgroundColor: isActive ? "#ef156c" : "",
+                    color: isActive ? "#fff" : "#333",
                   })}
                   onClick={handleClose}
                   end={item.link === "/user-panel"} // Only match exactly for the root route

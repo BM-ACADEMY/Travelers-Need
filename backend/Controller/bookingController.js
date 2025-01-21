@@ -118,6 +118,54 @@ exports.getBookingsByUser = async (req, res) => {
 };
 
 
+exports.getAllBookingsByUserDashboard = async (req, res) => {
+  try {
+    const { userId } = req.params; // UserId from params
+    const { page = 1, limit = 10 } = req.query; // Pagination params with default values
+
+    const filter = userId ? { userId: new mongoose.Types.ObjectId(userId) } : {}; // Filter by userId if provided
+
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0); // Set to start of the day
+
+    // Fetch filtered bookings with pagination and sorting
+    const bookings = await Booking.find(filter)
+      .populate("userId", "username email") // Populate user details
+      .populate("packageId", "title price duration") // Populate package details
+      .sort({ createdAt: -1 }) // Sort in descending order of creation
+      .skip((page - 1) * limit) // Skip records for pagination
+      .limit(parseInt(limit)); // Limit the number of records
+
+    // Calculate counts
+    const [newBookingCount, totalBookingCount, bookingCompletedCount, cancelBookingCount] = await Promise.all([
+      Booking.countDocuments({ ...filter, createdAt: { $gte: currentDate } }), // Count bookings for the current day
+      Booking.countDocuments(filter), // Total bookings
+      Booking.countDocuments({ ...filter, status: "Confirmed" }), // Completed bookings
+      Booking.countDocuments({ ...filter, status: "Cancelled" }), // Cancelled bookings
+    ]);
+
+    // Response structure
+    res.json({
+      message: "Bookings retrieved successfully",
+      summary: {
+        newBooking: { title: "New Booking", count: newBookingCount },
+        totalBooking: { title: "Total Bookings", count: totalBookingCount },
+        bookingCompleted: { title: "Completed Bookings", count: bookingCompletedCount },
+        cancelBooking: { title: "Cancelled Bookings", count: cancelBookingCount },
+      },
+      bookings,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalPages: Math.ceil(totalBookingCount / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+
 
 // Import moment.js for date manipulation
 exports.getAllBookingsForUpcomingTrips = async (req, res) => {

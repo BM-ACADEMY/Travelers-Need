@@ -37,7 +37,7 @@ const Header = ({ toggleSidebar }) => {
     >
       <div className="container-fluid d-flex p-3">
         {/* Left side: Sidebar Toggle and Active Title */}
-        <div className="d-flex justify-content-center justify-content-sm-between w-100">
+        <div className="d-flex justify-content-between justify-content-lg-center w-100">
           <div className="d-flex justify-content-center align-items-center">
             <button
               className="btn btn-link p-0 d-lg-none d-sm-block"

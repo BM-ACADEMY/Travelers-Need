@@ -17,6 +17,9 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useUser } from "../hooks/UserContext";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { auth } from "../firebase"; // Import auth from the firebase.js file
+
 
 const Sign_in = ({ open, onClose, onSignUpClick }) => {
   const [formData, setFormData] = useState({
@@ -96,6 +99,17 @@ const Sign_in = ({ open, onClose, onSignUpClick }) => {
 
   const isFormValid =
     validateEmail(formData.email) && validatePassword(formData.password);
+ 
+  const handleGoogleClick = async () => {
+    const provider = new GoogleAuthProvider();
+    provider.getCustomParameters({ prompt: "select_account" });
+    try {
+      const resource = await signInWithPopup(auth, provider);
+      console.log(resource, "auth");
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -133,6 +147,7 @@ const Sign_in = ({ open, onClose, onSignUpClick }) => {
                 variant="contained"
                 color="warning"
                 fullWidth
+                onClick={handleGoogleClick}
                 startIcon={<FontAwesomeIcon icon={faGoogle} />}
                 sx={{ mb: 2 }}
               >
@@ -233,7 +248,7 @@ const Sign_in = ({ open, onClose, onSignUpClick }) => {
               <h1 style={{ fontSize: "2rem", fontWeight: "bold" }}>
                 Welcome to Sign In
               </h1>
-              <p style={{ fontSize: "1rem" ,color:'white'}}>
+              <p style={{ fontSize: "1rem", color: "white" }}>
                 Don't have an account?{" "}
                 <span
                   style={{

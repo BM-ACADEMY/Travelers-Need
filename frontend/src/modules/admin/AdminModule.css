@@ -39,12 +39,13 @@
 .desktop-sidebar {
   background-color: #f8f9fa;
   width: 250px; /* Set the width for desktop */
-  height: 100vh;
+  height: 90vh !important;
   position: fixed;
   top: 0;
   left: 0;
   padding-top: 60px; /* Adjust for header */
   z-index: 1000;
+  overflow-y: scroll !important;
 }
 
 /* Mobile Sidebar (Offcanvas) */
@@ -75,11 +76,13 @@
 }
 .fw-bold::-webkit-scrollbar {
   width: 4px; /* Scrollbar width */
+  
 }
 
 .fw-bold::-webkit-scrollbar-thumb {
   background: #ef156c; /* Scrollbar thumb color */
   border-radius: 10px; /* Rounded corners */
+  scrollbar-width: none;
 }
 
 .fw-bold::-webkit-scrollbar-track {
