@@ -95,6 +95,7 @@ import Feedback from "../admin/users/pages/Feedback";
 import Support from "../admin/users/pages/Support";
 import Settings from "../admin/users/pages/Settings";
 import Travelers from "./users/pages/Travelers";
+import Address from "../admin/users/pages/Address";
 import "./AdminModule.css";
 import {jwtDecode} from "jwt-decode";
 import Blog from "./users/pages/Blog";
@@ -163,6 +164,7 @@ function AdminModule() {
           <Route path="support" element={<Support />} />
           <Route path="settings" element={<Settings />} />
           <Route path="blog" element={<Blog />} />
+          <Route path="address" element={<Address />} />
         </Routes>
       </div>
     </div>
