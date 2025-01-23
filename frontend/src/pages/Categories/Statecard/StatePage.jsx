@@ -81,8 +81,13 @@ const StatePage = () => {
           .filter((pkg) => pkg.itTop === "Y")
           .slice(0, 5);
         setTopPackages(topPackagesData);
-      } catch (err) {
-        setError(err.response?.data?.message || "Error fetching state data");
+      } catch (error) {
+        if (error.response && error.response.status === 404) {
+          console.error("No address found, redirecting to NotFound page");
+          navigate("/not-found"); // Redirect to the NotFound page
+        } else {
+          console.error("An unexpected error occurred:", error.message);
+        }
       }
     };
 

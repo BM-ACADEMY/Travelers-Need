@@ -31,6 +31,8 @@ import BlogList from "./pages/blog/BlogList";
 import BlogPage from "./pages/blog/BlogPage";
 import UserModule from "./modules/user/UserModule";
 import UserRoute from "./guard/userRoute";
+import NotFound from "./pages/NotFound";
+import Not_Found from "./pages/Not_Found";
 
 
 export default function App() {
@@ -62,6 +64,7 @@ export default function App() {
             <Route path="/terms-conditions" element={<TermsAndConditions />} />
             <Route path="/blogs" element={<BlogList />} />
             <Route path="/blog/:title" element={<BlogPage />} />
+            <Route path="/not-found" element={<Not_Found />} />
             <Route
               path="/details/:stateName/:cityName"
               element={<PackageDetailsPage />}
@@ -83,6 +86,7 @@ export default function App() {
             }
           />
           
+          {/* User Route with UserRoute guard */}
           <Route
             path="/user-panel/*"
             element={
@@ -91,7 +95,9 @@ export default function App() {
               </ComponentNameProvider>
             }
           />
-          
+
+          {/* Catch-All Not Found Route */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
     </UserProvider>

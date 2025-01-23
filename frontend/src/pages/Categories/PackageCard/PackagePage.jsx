@@ -33,7 +33,7 @@ import { FreeMode, Navigation, Thumbs } from "swiper/modules";
 import ReviewForState from "../../Reviews/ReviewForState";
 import ReusableModal from "../../model/ReusableModel";
 import QuoteForm from "../../model/QuoteForm";
-
+import BookingPolicy from  "../../staticPages/BookingPolicy"
 const PackagePage = () => {
   const { tourCode } = useParams();
   const { user, login } = useUser();
@@ -631,11 +631,12 @@ const PackagePage = () => {
         {/* Booking Policy Section */}
         <div ref={bookingPolicyRef} className="mb-5">
           <h3 className="mb-3">Booking Policy</h3>
-          <ul>
+          <BookingPolicy />
+          {/* <ul>
             {packageDetails?.bookingPolicy?.map((item, index) => (
               <li key={index}>{item}</li>
             ))}
-          </ul>
+          </ul> */}
         </div>
       </div>
       {/* Booking Form */}
