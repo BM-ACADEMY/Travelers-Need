@@ -424,16 +424,8 @@ import {
   Col,
 } from "react-bootstrap";
 import axios from "axios";
+import {deleteBlog,updateBlog,createBlog,fetchAllBlogs} from "../../services/ApiService";
 
-const generateImageUrl = (imagePath) => {
-  if (!imagePath) return "placeholder.jpg";
-  const parts = imagePath.split("\\");
-  const title = parts[0]?.toLowerCase() || "";
-  const fileName = parts[1] || "";
-  return `http://localhost:3000/api/blogs/get-image?title=${encodeURIComponent(
-    title
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
 
 const Blog = () => {
   const [blogs, setBlogs] = useState([]);
@@ -445,14 +437,22 @@ const Blog = () => {
   const [modalMode, setModalMode] = useState("view"); // Modes: view, add, edit, delete
   const [cityDetails, setCityDetails] = useState([]);
   const [formImages, setFormImages] = useState([]);
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const GET_IMAGE_FOR_BLOG_URL = import.meta.env.VITE_GET_IMAGE_FOR_BLOG.startsWith("http")
+  ? import.meta.env.VITE_GET_IMAGE_FOR_BLOG
+  : `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_BLOG}`;
 
+const generateImageUrl = (imagePath) => {
+  if (!imagePath) return "placeholder.jpg";
+  const parts = imagePath.split("\\");
+  const title = parts[0]?.toLowerCase() || "";
+  const fileName = parts[1] || "";
+  return `${GET_IMAGE_FOR_BLOG_URL}?title=${encodeURIComponent(title)}&fileName=${encodeURIComponent(fileName)}`;
+};
   // Fetch blogs from the backend
   const fetchBlogs = async (page = 1, limit = 10, title = "") => {
     try {
-      const response = await axios.get(
-        "http://localhost:3000/api/blogs/get-all-blogs",
-        { params: { page, limit, title } }
-      );
+      const response = await fetchAllBlogs(page,limit,title);
       setBlogs(response.data.blogs);
       setTotalPages(response.data.pagination.totalPages);
     } catch (error) {
@@ -540,6 +540,60 @@ const Blog = () => {
   //     console.error("Error submitting blog:", error);
   //   }
   // };
+  // const handleBlogSubmit = async (blogData) => {
+  //   console.log(blogData);
+  
+  //   try {
+  //     const formData = new FormData();
+  
+  //     // Add form fields
+  //     formData.append("title", blogData.title);
+  //     formData.append("author", blogData.author);
+  //     formData.append("description", blogData.description);
+  
+  //     // Handle cityDetails: stringify the array of objects
+  //     if (blogData.cityDetails && Array.isArray(blogData.cityDetails)) {
+  //       formData.append("cityDetails", JSON.stringify(blogData.cityDetails));
+  //     }
+  
+  //     // Handle images: append new images if provided
+  //     if (formImages.length > 0) {
+  //       for (let i = 0; i < formImages.length; i++) {
+  //         formData.append("images", formImages[i]);
+  //       }
+  //     } else if (modalMode === "edit" && currentBlog && currentBlog.images) {
+  //       // If no new images, send existing images from the blog
+  //       currentBlog.images.forEach(image => {
+  //         formData.append("images", image);  // Send existing images
+  //       });
+  //     }
+  
+  //     const requestUrl = modalMode === "add"
+  //       ? "http://localhost:3000/api/blogs/create-blog"
+  //       : `http://localhost:3000/api/blogs/update-blog/${currentBlog._id}`;
+  
+  //     const requestMethod = modalMode === "add" ? "post" : "put";
+  
+  //     const response = await axios({
+  //       method: requestMethod,
+  //       url: requestUrl,
+  //       data: formData,
+  //       headers: { "Content-Type": "multipart/form-data" }
+  //     });
+  
+  //     if (response.data) {
+  //       fetchBlogs();
+  //       setBlogs(
+  //         modalMode === "add"
+  //           ? [response.data.blog, ...blogs]
+  //           : blogs.map((blog) => blog._id === currentBlog._id ? response.data.blog : blog)
+  //       );
+  //     }
+  //     setShowModal(false);
+  //   } catch (error) {
+  //     console.error("Error submitting blog:", error);
+  //   }
+  // };
   const handleBlogSubmit = async (blogData) => {
     console.log(blogData);
   
@@ -568,40 +622,37 @@ const Blog = () => {
         });
       }
   
-      const requestUrl = modalMode === "add"
-        ? "http://localhost:3000/api/blogs/create-blog"
-        : `http://localhost:3000/api/blogs/update-blog/${currentBlog._id}`;
-  
-      const requestMethod = modalMode === "add" ? "post" : "put";
-  
-      const response = await axios({
-        method: requestMethod,
-        url: requestUrl,
-        data: formData,
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-  
-      if (response.data) {
-        fetchBlogs();
-        setBlogs(
-          modalMode === "add"
-            ? [response.data.blog, ...blogs]
-            : blogs.map((blog) => blog._id === currentBlog._id ? response.data.blog : blog)
-        );
+      // Determine the request method and URL based on modal mode
+      if (modalMode === "add") {
+        // Call the createBlog function for adding a new blog
+        const response = await createBlog(formData);
+        
+        if (response.data) {
+          fetchBlogs();
+          setBlogs([response.data.blog, ...blogs]);
+        }
+      } else if (modalMode === "edit" && currentBlog) {
+        // Call the updateBlog function for updating an existing blog
+        const response = await updateBlog(currentBlog._id, formData);
+        
+        if (response.data) {
+          fetchBlogs();
+          setBlogs(blogs.map((blog) => 
+            blog._id === currentBlog._id ? response.data.blog : blog
+          ));
+        }
       }
+  
       setShowModal(false);
     } catch (error) {
       console.error("Error submitting blog:", error);
     }
   };
   
-  
   // Handle delete
   const handleDeleteBlog = async () => {
     try {
-      await axios.delete(
-        `http://localhost:3000/api/blogs/delete-blog/${currentBlog._id}`
-      );
+      await deleteBlog(currentBlog._id);
       fetchBlogs();
       setBlogs(blogs.filter((blog) => blog._id !== currentBlog._id));
       setShowModal(false);

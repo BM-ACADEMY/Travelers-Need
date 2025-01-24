@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import axios from 'axios';
-
+import {fetchAllAddressesTourType} from "../modules/admin/services/ApiService";
 const Layout = () => {
   const themes = ["Honeymoon", "HillStations", "Wildlife", "Pilgrimage", "Beach", "Heritage"];
   // const topPackages = ["Coorg", "Ooty", "Goa", "Shimla", "Pondicherry", "Mahabaleshwar", "Chikmagalur"];
@@ -27,9 +27,7 @@ const Layout = () => {
     useEffect(() => {
       const fetchDestinations = async () => {
         try {
-          const response = await axios.get(
-            "http://localhost:3000/api/address/get-all-addresses-tour-type"
-          );
+          const response = await fetchAllAddressesTourType();
           const { domestic, international } = response.data.addresses;
   
           setTopPackages(domestic);

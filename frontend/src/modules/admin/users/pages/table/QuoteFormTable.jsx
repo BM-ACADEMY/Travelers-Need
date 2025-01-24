@@ -7,7 +7,7 @@ import {
   FormControl,
 } from "react-bootstrap";
 import axios from "axios";
-
+import {fetchAllQuotesForAdminPage} from "../../../services/ApiService";
 const QuoteFormTable = ({ onUpdate }) => {
   const [quotes, setQuotes] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,13 +28,12 @@ const QuoteFormTable = ({ onUpdate }) => {
     // Fetch quotes based on search term, filter, and pagination
     const fetchQuotes = async () => {
       try {
-        const response = await axios.get("http://localhost:3000/api/quotes/get-all-quotes-for-admin-page", {
-          params: {
-            page: currentPage,
-            searchTerm,
-            filter,
-          },
-        });
+        const response =  fetchAllQuotesForAdminPage(
+                currentPage,
+                searchTerm,
+                filter
+              );
+        
         setQuotes(response.data.quotes);
         setTotalPages(response.data.totalPages);
       } catch (error) {
@@ -63,7 +62,7 @@ const QuoteFormTable = ({ onUpdate }) => {
 
   const handleDelete = async (quoteId) => {
     try {
-      await axios.delete(`http://localhost:3000/api/quotes/${quoteId}`);
+      // await axios.delete(`http://localhost:3000/api/quotes/${quoteId}`);
       // Re-fetch the quotes after deletion
       setCurrentPage(1);
     } catch (error) {

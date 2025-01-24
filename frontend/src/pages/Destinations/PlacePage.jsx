@@ -4,26 +4,29 @@ import './PlacePage.css';
 import ReusableModal from "../model/ReusableModel";
 import QuoteForm from "../model/QuoteForm";
 
-const constructImageURL = (imagePath) => {
-  if (!imagePath) {
-    console.warn("Image path is not provided.");
-    return "";
-  }
-
-  const normalizedPath = imagePath.replace(/\\/g, "/");
-  const parts = normalizedPath.split("/");
-  const placeName = parts[0] || "";
-  const fileName = parts.slice(1).join("/") || "";
-
-  return `http://localhost:3000/api/places/get-image?placeName=${encodeURIComponent(
-    placeName
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
 
 const PlacePage = () => {
   const { placeName } = useParams();
   const [placeDetails, setPlaceDetails] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
+  const constructImageURL = (imagePath) => {
+    if (!imagePath) {
+      console.warn("Image path is not provided.");
+      return "";
+    }
+  
+    const normalizedPath = imagePath.replace(/\\/g, "/");
+    const parts = normalizedPath.split("/");
+    const placeName = parts[0] || "";
+    const fileName = parts.slice(1).join("/") || "";
+  
+    return `${BASE_URL}/places/get-image?placeName=${encodeURIComponent(
+      placeName
+    )}&fileName=${encodeURIComponent(fileName)}`;
+  };
+  
+
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsModalOpen(true);

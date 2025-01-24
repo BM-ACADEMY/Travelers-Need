@@ -6,7 +6,7 @@ const Pilgrimage_category = ({ pilgrimageData }) => {
     if (!pilgrimageData || !Array.isArray(pilgrimageData) || pilgrimageData.length === 0) {
         return <p className="text-center">No Pilgrimage Destinations Available</p>;
     }
-
+    var BASE_URL = import.meta.env.VITE_BASE_URL;
     useEffect(() => {
         console.log('Pilgrimage Data:', pilgrimageData);
     }, [pilgrimageData]);
@@ -30,7 +30,7 @@ const Pilgrimage_category = ({ pilgrimageData }) => {
                         const parts = image.split('\\');
                         const fileName = parts.pop();
                         const stateCode = parts.join('\\'); // Ensure correct state extraction
-                        stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+                        stateImageURL = `${BASE_URL}/address/get-image?state=${encodeURIComponent(
                             stateCode
                         )}&fileName=${encodeURIComponent(fileName)}`;
                     }

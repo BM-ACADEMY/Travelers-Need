@@ -1,7 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { Modal, Button, OverlayTrigger, Tooltip } from "react-bootstrap";
 import AlertMessage from "../../../reusableComponents/AlertMessage";
+import {
+  fetchAllTourPlansSearch,
+  fetchAllTourPlansSearchByCity,
+  deleteTourPlan,
+  fetchImageTourPlan,
+} from "../../../services/ApiService";
 const TourPlansTable = ({ onEditTourPlan, successMessage }) => {
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState("");
@@ -20,14 +26,29 @@ const TourPlansTable = ({ onEditTourPlan, successMessage }) => {
   const [status, setStatus] = useState("");
   const [message, setMessage] = useState("");
   const [showAlert, setShowAlert] = useState(false);
+  
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const VITE_GET_IMAGE_FOR_TOUR_PLAN = import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN.startsWith(
+    "http"
+  )
+    ? import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN
+    : `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN}`;
+
+  const generateImageUrl = (imagePath) => {
+    if (!imagePath) return "placeholder.jpg";
+
+    const [tourCode, fileName] = imagePath.split("\\");
+
+    return `${VITE_GET_IMAGE_FOR_TOUR_PLAN}?tourCode=${encodeURIComponent(
+      tourCode?.toLowerCase() || ""
+    )}&fileName=${encodeURIComponent(fileName || "")}`;
+  };
 
   // Fetch all cities on component mount
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search"
-        );
+        const response = await fetchAllTourPlansSearch();
         setCities(response.data.destinations);
       } catch (error) {
         console.error("Error fetching cities:", error);
@@ -41,24 +62,19 @@ const TourPlansTable = ({ onEditTourPlan, successMessage }) => {
     if (selectedCity) {
       fetchTourPlans();
     }
-  }, [selectedCity, pagination.currentPage,successMessage]);
-//   if (successMessage == true) {
-//     fetchTourPlans();
-//   }
+  }, [selectedCity, pagination.currentPage, successMessage]);
+  //   if (successMessage == true) {
+  //     fetchTourPlans();
+  //   }
 
   const fetchTourPlans = async (searchTermValue = "") => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search-by-city`,
-        {
-          params: {
-            cityName: selectedCity,
-            title: searchTermValue || searchTerm, // Use the passed value or fallback to state
-            page: pagination.currentPage,
-            limit: 10,
-          },
-        }
+      const response = await fetchAllTourPlansSearchByCity(
+        selectedCity,
+        searchTermValue,
+        searchTerm,
+        pagination.currentPage
       );
       setTourPlans(response.data.tourPlans);
       setPagination(response.data.pagination);
@@ -93,9 +109,7 @@ const TourPlansTable = ({ onEditTourPlan, successMessage }) => {
       setStatus("");
       setMessage("");
       setShowAlert(false);
-      const response = await axios.delete(
-        `http://localhost:3000/api/tour-plans/delete-tour-plan/${tourPlanId}`
-      );
+      const response = await deleteTourPlan(tourPlanId);
       console.log(response.data);
       fetchTourPlans();
       if (response && response.status === 201) {
@@ -120,15 +134,6 @@ const TourPlansTable = ({ onEditTourPlan, successMessage }) => {
   };
 
   // Utility function to generate image URL
-  const generateImageUrl = (imagePath) => {
-    if (!imagePath) return "placeholder.jpg";
-    const parts = imagePath.split("\\");
-    const tourCode = parts[0]?.toLowerCase() || "";
-    const fileName = parts[1] || "";
-    return `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
-      tourCode
-    )}&fileName=${encodeURIComponent(fileName)}`;
-  };
 
   // Handle View button click to open modal with selected tour plan details
   const handleViewClick = (plan) => {
@@ -141,14 +146,14 @@ const TourPlansTable = ({ onEditTourPlan, successMessage }) => {
   };
 
   // Handle Delete button click
-  const handleDeleteClick = async (planId) => {
-    try {
-      await axios.delete(`http://localhost:3000/api/tour-plans/${planId}`);
-      fetchTourPlans(); // Refresh the list after deletion
-    } catch (error) {
-      console.error("Error deleting tour plan:", error);
-    }
-  };
+  // const handleDeleteClick = async (planId) => {
+  //   try {
+  //     await axios.delete(`http://localhost:3000/api/tour-plans/${planId}`);
+  //     fetchTourPlans(); // Refresh the list after deletion
+  //   } catch (error) {
+  //     console.error("Error deleting tour plan:", error);
+  //   }
+  // };
 
   return (
     <div className="container mt-4">
@@ -209,68 +214,67 @@ const TourPlansTable = ({ onEditTourPlan, successMessage }) => {
               </thead>
               <tbody>
                 {tourPlans.length > 0 ? (
-                  tourPlans.map((place) => (
-                    <tr key={place._id}>
-                      <td>
-                        <img
-                          src={
-                            generateImageUrl(place.images[0]) ||
-                            "placeholder.jpg"
-                          }
-                          alt="Tour"
-                          width={50}
-                          onError={(e) => (e.target.src = "placeholder.jpg")}
-                        />
-                      </td>
-                      <td>{place.title}</td>
-                      <td>{place.baseFare}</td>
-                      <td>{place.itSummaryTitle}</td>
-                      <td>
-                        <div className="d-flex gap-2">
-                          {/* View Button */}
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={
-                              <Tooltip>View details about this place</Tooltip>
-                            }
-                          >
-                            <button
-                              className="btn btn-primary btn-sm"
-                              onClick={() => handleShowModal(place, "view")}
-                            >
-                              View
-                            </button>
-                          </OverlayTrigger>
+                  tourPlans.map((place) => {
+                    // Generate the image URL with a regular function
+                    const imageUrl = place.images?.[0]
+                      ? generateImageUrl(place.images[0])
+                      : "placeholder.jpg";
 
-                          {/* Edit Button */}
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={<Tooltip>Edit this place</Tooltip>}
-                          >
-                            <button
-                              className="btn btn-warning btn-sm"
-                              onClick={() => handleEditClick(place)} // Pass selected data directly
+                    return (
+                      <tr key={place._id}>
+                        <td>
+                          <img
+                            src={imageUrl}
+                            alt="Tour"
+                            width={50}
+                            onError={(e) => (e.target.src = "placeholder.jpg")}
+                          />
+                        </td>
+                        <td>{place.title}</td>
+                        <td>{place.baseFare}</td>
+                        <td>{place.itSummaryTitle}</td>
+                        <td>
+                          <div className="d-flex gap-2">
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={
+                                <Tooltip>View details about this place</Tooltip>
+                              }
                             >
-                              Edit
-                            </button>
-                          </OverlayTrigger>
-
-                          {/* Delete Button */}
-                          <OverlayTrigger
-                            placement="top"
-                            overlay={<Tooltip>Delete this place</Tooltip>}
-                          >
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleShowModal(place, "delete")}
+                              <button
+                                className="btn btn-primary btn-sm"
+                                onClick={() => handleShowModal(place, "view")}
+                              >
+                                View
+                              </button>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip>Edit this place</Tooltip>}
                             >
-                              Delete
-                            </button>
-                          </OverlayTrigger>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
+                              <button
+                                className="btn btn-warning btn-sm"
+                                onClick={() => handleEditClick(place)}
+                              >
+                                Edit
+                              </button>
+                            </OverlayTrigger>
+                            <OverlayTrigger
+                              placement="top"
+                              overlay={<Tooltip>Delete this place</Tooltip>}
+                            >
+                              <button
+                                className="btn btn-danger btn-sm"
+                                onClick={() => handleShowModal(place, "delete")}
+                              >
+                                Delete
+                              </button>
+                            </OverlayTrigger>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
                 ) : (
                   <tr>
                     <td colSpan="5" className="text-center">

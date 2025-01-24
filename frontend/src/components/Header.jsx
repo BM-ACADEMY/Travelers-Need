@@ -14,7 +14,7 @@ import { Dialog, DialogTitle, DialogContent, IconButton } from "@mui/material";
 import Sign_in from "../pages/Sign_in";
 import Sign_up from "../pages/Sign_up";
 import axios from "axios";
-
+import {fetchAllAddressesTourType} from "../modules/admin/services/ApiService";
 const Navbar = () => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [profile, setProfile] = useState(false);
@@ -59,9 +59,7 @@ const Navbar = () => {
   useEffect(() => {
     const fetchDestinations = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/address/get-all-addresses-tour-type"
-        );
+        const response = await fetchAllAddressesTourType()
         const { domestic, international } = response.data.addresses;
 
         setDomesticDestinations(domestic);

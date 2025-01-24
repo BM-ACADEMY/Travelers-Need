@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, Form } from "react-bootstrap";
 import axios from "axios";
+import {updateBlog} from "../../../services/ApiService";
 
 const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
   const [formData, setFormData] = useState({
@@ -62,14 +63,18 @@ const BlogModal = ({ show, onHide, blog, setBlogs, mode, handleDelete }) => {
     setFormData({ ...formData, cityDetails: updatedCityDetails });
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (mode === "edit") {
-      axios
-        .patch(`http://localhost:3000/api/blogs/update-blog/${blog._id}`, formData)
-        .then((response) => {
-          setBlogs((prev) => prev.map((b) => (b._id === blog._id ? response.data : b)));
-          onHide();
-        });
+      try {
+        const response = await updateBlog(blog._id, formData); // Await the result of the updateBlog function
+        // Update the blogs state with the new data
+        setBlogs((prev) =>
+          prev.map((b) => (b._id === blog._id ? response.data : b))
+        );
+        onHide(); // Close the modal or perform any other action after success
+      } catch (error) {
+        console.error("Error updating the blog:", error); // Handle any errors that occur during the API call
+      }
     }
   };
 

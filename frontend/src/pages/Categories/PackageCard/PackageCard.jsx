@@ -13,6 +13,12 @@ const PackageCard = ({ tourPlan }) => {
   } = tourPlan;
 
   // Extract tourCode and fileName from the first image path
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const VITE_GET_IMAGE_FOR_TOUR_PLAN = import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN.startsWith(
+    "http"
+  )
+    ? import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN
+    : `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN}`;
   let tourCode = '';
   let fileName = '';
   if (images.length > 0) {
@@ -22,9 +28,9 @@ const PackageCard = ({ tourPlan }) => {
   }
   const lowerCaseTourCode = tourCode.toLowerCase();
   // Construct the image URL dynamically
-  const imageUrl = `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
-    tourCode
-  )}&fileName=${encodeURIComponent(fileName)}`;
+  const imageUrl =`${VITE_GET_IMAGE_FOR_TOUR_PLAN}?tourCode=${encodeURIComponent(
+    tourCode?.toLowerCase() || ""
+  )}&fileName=${encodeURIComponent(fileName || "")}`;
 
   return (
     <Link className="" to={`/tour-plan/${lowerCaseTourCode}`} style={{ textDecoration: 'none' }}>

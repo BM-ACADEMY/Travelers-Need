@@ -4,17 +4,17 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCalendarAlt, faUser } from '@fortawesome/free-solid-svg-icons';
 import './BlogList.css'; // Optional for styling
-
+import {fetchAllBlogs} from "../../modules/admin/services/ApiService";
 // Helper function to generate image URL
-const generateImageUrl = (imagePath) => {
-  if (!imagePath) return "placeholder.jpg";
-  const parts = imagePath.split("\\");
-  const title = parts[0]?.toLowerCase() || "";
-  const fileName = parts[1] || "";
-  return `http://localhost:3000/api/blogs/get-image?title=${encodeURIComponent(
-    title
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
+// const generateImageUrl = (imagePath) => {
+//   if (!imagePath) return "placeholder.jpg";
+//   const parts = imagePath.split("\\");
+//   const title = parts[0]?.toLowerCase() || "";
+//   const fileName = parts[1] || "";
+//   return `http://localhost:3000/api/blogs/get-image?title=${encodeURIComponent(
+//     title
+//   )}&fileName=${encodeURIComponent(fileName)}`;
+// };
 
 // Format the blog title for use in the URL
 const formatTitle = (title) => {
@@ -23,11 +23,21 @@ const formatTitle = (title) => {
 
 const BlogList = () => {
   const [blogs, setBlogs] = useState([]);
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const GET_IMAGE_FOR_BLOG_URL = import.meta.env.VITE_GET_IMAGE_FOR_BLOG.startsWith("http")
+  ? import.meta.env.VITE_GET_IMAGE_FOR_BLOG
+  : `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_BLOG}`;
 
-  useEffect(() => {
+const generateImageUrl = (imagePath) => {
+  if (!imagePath) return "placeholder.jpg";
+  const parts = imagePath.split("\\");
+  const title = parts[0]?.toLowerCase() || "";
+  const fileName = parts[1] || "";
+  return `${GET_IMAGE_FOR_BLOG_URL}?title=${encodeURIComponent(title)}&fileName=${encodeURIComponent(fileName)}`;
+};
+  useEffect(  () => {
     // Fetch blogs from API
-    axios
-      .get('http://localhost:3000/api/blogs/get-all-blogs') // Replace with your API endpoint
+     fetchAllBlogs() 
       .then((response) => setBlogs(response.data.blogs))
       .catch((error) => console.error('Error fetching blogs:', error));
   }, []);

@@ -54,6 +54,8 @@ const Home = () => {
   const [destination, setDestination] = useState("");
   const [duration, setDuration] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     if (swiperRef.current) {
       swiperRef.current.params.navigation.prevEl = prevRef.current;
@@ -66,7 +68,7 @@ const Home = () => {
     const fetchInitialData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search"
+          `${BASE_URL}/tour-plans/get-all-tour-plans-for-search`
         );
         const { startPlaces, destinations, durations } = response.data;
 
@@ -104,7 +106,7 @@ const Home = () => {
   };
   const fetchReviews = async () => {
     try {
-      const response = await axios.get(`${baseurl}/reviews/get-all-reviews`, {
+      const response = await axios.get(`${BASE_URL}/reviews/get-all-reviews`, {
         params: { page, limit: 10 },
       });
 
@@ -121,7 +123,7 @@ const Home = () => {
   const fetchPackages = async () => {
     try {
       const response = await axios.get(
-        `${baseurl}/tour-plans/get-all-tour-plans`
+        `${BASE_URL}/tour-plans/get-all-tour-plans`
       );
       const { data, trendingCategories } = response.data;
       if (data) {
@@ -147,7 +149,7 @@ const Home = () => {
   const fetchThemes = async () => {
     try {
       const response = await axios.get(
-        `${baseurl}/themes/get-all-themes-by-tour-plan`
+        `${BASE_URL}/themes/get-all-themes-by-tour-plan`
       );
       const { data } = response.data;
       console.log(data);

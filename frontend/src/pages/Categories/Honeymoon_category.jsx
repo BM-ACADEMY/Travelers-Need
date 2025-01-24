@@ -9,7 +9,7 @@ const Honeymoon_category = ({ honeymoonData }) => {
     if (!honeymoonData || !Array.isArray(honeymoonData) || honeymoonData.length === 0) {
         return <p className="text-center">No Honeymoon Destinations Available</p>;
     }
-
+    var BASE_URL = import.meta.env.VITE_BASE_URL;
     // Handle state selection and navigation
     const handleStateClick = (stateName) => {
         setSelectedState(stateName);
@@ -34,7 +34,7 @@ const Honeymoon_category = ({ honeymoonData }) => {
                         const fileName = parts.pop(); // Get the file name
                         const stateCode = parts.length > 0 ? parts[0] : 'Unknown'; // Get the state code
 
-                        stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+                        stateImageURL = `${BASE_URL}/address/get-image?state=${encodeURIComponent(
                             stateCode
                         )}&fileName=${encodeURIComponent(fileName)}`;
                     }

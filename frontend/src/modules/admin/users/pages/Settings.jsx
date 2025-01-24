@@ -12,6 +12,8 @@ import {
 } from "react-bootstrap";
 import { useUser } from "../../../../hooks/UserContext";
 import AlertMessage from "../../reusableComponents/AlertMessage";
+import {updateUserById,fetchUserById} from "../../services/ApiService";
+
 
 const Settings = () => {
   const [userData, setUserData] = useState({
@@ -38,9 +40,7 @@ const Settings = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try { 
-        const response = await axios.get(
-          `http://localhost:3000/api/users/get-user-by-id/${user.userId}`
-        );
+        const response = await fetchUserById(user.userId);
         if (response.data) {
           setUserData(response.data);
         }
@@ -63,10 +63,7 @@ const Settings = () => {
     setShowAlert(false);
     try {
       const updatedData = { ...userData, [field]: editedValue };
-      const response = await axios.put(
-        `http://localhost:3000/api/users/update-user/${user.userId}`,
-        updatedData
-      );
+      const response = await updateUserById(user.userId,updatedData);
       if (response && response.status === 201) {
         setUserData(updatedData); // Update state with the new data
         setStatus("success");

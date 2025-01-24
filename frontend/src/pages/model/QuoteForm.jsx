@@ -29,12 +29,12 @@ const QuoteForm = ({ onSubmit }) => {
   });
   const [successAlert, setSuccessAlert] = useState(false);
   const [errorAlert, setErrorAlert] = useState(false);
-
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const fetchDurations = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search"
+          `${BASE_URL}/tour-plans/get-all-tour-plans-for-search`
         );
         const { durations } = response.data;
 
@@ -61,7 +61,7 @@ const QuoteForm = ({ onSubmit }) => {
     try {
       // Simulate API call
       await axios.post(
-        "http://localhost:3000/api/quotes/create-quote",
+        `${BASE_URL}/quotes/create-quote`,
         formData
       );
       setSuccessAlert(true); // Show success alert

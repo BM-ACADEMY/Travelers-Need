@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Button, Modal, Table } from "react-bootstrap";
-const getImageURL = (imagePath) => {
-  let stateImageURL = "";
-  if (imagePath) {
-    const parts = imagePath.split("\\"); // Split the path by backslashes
-    const fileName = parts.pop(); // Get the file name
-    const stateCode = parts.length > 0 ? parts[0] : "Unknown"; // Get the state code
+import {fetchAllAddressesForAdmin} from "../../../services/ApiService";
+// const getImageURL = (imagePath) => {
+//   let stateImageURL = "";
+//   if (imagePath) {
+//     const parts = imagePath.split("\\"); // Split the path by backslashes
+//     const fileName = parts.pop(); // Get the file name
+//     const stateCode = parts.length > 0 ? parts[0] : "Unknown"; // Get the state code
 
-    // Construct and return the image URL
-    stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
-      stateCode
-    )}&fileName=${encodeURIComponent(fileName)}`;
-  }
-  return stateImageURL;
-};
+//     // Construct and return the image URL
+//     stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+//       stateCode
+//     )}&fileName=${encodeURIComponent(fileName)}`;
+//   }
+//   return stateImageURL;
+// };
 const AddressTable = ({ onDelete, onEdit }) => {
   const [addresses, setAddresses] = useState([]);
   const [filters, setFilters] = useState({
@@ -34,23 +35,32 @@ const AddressTable = ({ onDelete, onEdit }) => {
     fetchAddresses();
   }, [filters, pagination.currentPage]);
 
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+const GET_IMAGE_FOR_ADDRESS_URL = import.meta.env.VITE_GET_IMAGE_FOR_ADDRESS.startsWith("http")
+? import.meta.env.VITE_GET_IMAGE_FOR_ADDRESS
+: `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_ADDRESS}`;
+  const getImageURL = (imagePath) => {
+    let stateImageURL = "";
+    if (imagePath) {
+      const parts = imagePath.split("\\"); // Split the path by backslashes
+      const fileName = parts.pop(); // Get the file name
+      const stateCode = parts.length > 0 ? parts[0] : "Unknown"; // Get the state code
+  
+      // Construct and return the image URL using the .env variable
+      stateImageURL = `${GET_IMAGE_FOR_ADDRESS_URL}?state=${encodeURIComponent(
+        stateCode
+      )}&fileName=${encodeURIComponent(fileName)}`;
+    }
+    return stateImageURL;
+  };
+  
   const fetchAddresses = async () => {
     const { country, state, city } = filters;
     const { currentPage, limit } = pagination;
    
     try {
-      const response = await axios.get(
-        `http://localhost:3000/api/address/get-all-addresses-for-admin-page`,
-        {
-          params: {
-            country,
-            state,
-            city,
-            page: currentPage,
-            limit: limit,
-          },
-        }
-      );
+      const response = await fetchAllAddressesForAdmin(country, state, city, currentPage, limit);
+
       console.log(response.data);
       
       setAddresses(response.data.addresses);

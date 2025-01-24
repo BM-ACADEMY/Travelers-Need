@@ -89,6 +89,31 @@ const Places = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [initialData, setInitialData] = useState(null);
 
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const FETCH_PLACE_IMAGE_URL = import.meta.env.VITE_PLACE_IMAGE.startsWith(
+    "http"
+  )
+    ? import.meta.env.VITE_PLACE_IMAGE
+    : `${BASE_URL}${import.meta.env.VITE_PLACE_IMAGE}`;
+  const constructImageURL = (imagePath) => {
+    if (!imagePath) {
+      console.warn("Image path is not provided.");
+      return "";
+    }
+
+    // Normalize the path separators for cross-platform compatibility
+    const normalizedPath = imagePath.replace(/\\/g, "/");
+    const parts = normalizedPath.split("/");
+
+    let placeName = parts[0] || ""; // Extract the folder name as placeName
+    let fileName = parts[1] || ""; // Extract the file name
+
+    // Construct the URL
+    return `${FETCH_PLACE_IMAGE_URL}?placeName=${encodeURIComponent(
+      placeName
+    )}&fileName=${encodeURIComponent(fileName)}`;
+  };
+
   useEffect(() => {
     setComponentName("Places");
   }, [setComponentName]);
@@ -718,7 +743,7 @@ const Places = () => {
             value={selectedState}
             onChange={(e) => setSelectedState(e.target.value)}
           >
-             <option value="">-- Select a state --</option>
+            <option value="">-- Select a state --</option>
             {stateOptions.map((state) => (
               <option key={state._id} value={state.stateName}>
                 {state.stateName}
@@ -737,7 +762,9 @@ const Places = () => {
             className="form-select"
             value={selectedCity}
             onChange={(e) => setSelectedCity(e.target.value)}
-          > <option value="">-- Select a City --</option>
+          >
+            {" "}
+            <option value="">-- Select a City --</option>
             {parentPlaceOptions.map((city) => (
               <option key={city._id} value={city.cityName}>
                 {city.cityName}
@@ -1004,22 +1031,5 @@ const Places = () => {
     </div>
   );
 };
-const constructImageURL = (imagePath) => {
-  if (!imagePath) {
-    console.warn("Image path is not provided.");
-    return "";
-  }
 
-  // Normalize the path separators for cross-platform compatibility
-  const normalizedPath = imagePath.replace(/\\/g, "/");
-  const parts = normalizedPath.split("/");
-
-  let placeName = parts[0] || ""; // Extract the folder name as placeName
-  let fileName = parts[1] || ""; // Extract the file name
-
-  // Construct the URL
-  return `http://localhost:3000/api/places/get-image?placeName=${encodeURIComponent(
-    placeName
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
 export default Places;

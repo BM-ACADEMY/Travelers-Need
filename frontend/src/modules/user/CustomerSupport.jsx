@@ -3,6 +3,7 @@ import { useComponentName } from "../../hooks/ComponentnameContext";
 import { Form, Button } from "react-bootstrap";
 import axios from "axios";
 import AlertMessage from "../admin/reusableComponents/AlertMessage";
+import {createQuote} from "../admin/services/ApiService";
 const CustomerSupport = () => {
   const { setComponentName } = useComponentName();
   const [status, setStatus] = useState("");
@@ -75,44 +76,46 @@ const CustomerSupport = () => {
   };
 
   // Function to call the POST API
-  const addQuote = () => {
+  const addQuote = async () => {
     setStatus("");
     setMessage("");
     setShowAlert(false);
+  
     if (isFormValid()) {
-      console.log("Submitting:", newQuote);
-      axios
-        .post("http://localhost:3000/api/quotes/create-quote", newQuote)
-        .then((response) => {
-          if (response && response.status === 201) {
-            // Reset form after successful submission
-            setNewQuote({
-              email: "",
-              phone: "",
-              destination: "",
-              startDate: "",
-              duration: "",
-            });
-            setSuccessMessage(true);
-            setStatus("success");
-            setMessage("Requested Quote successfully!");
-            setShowAlert(true); // Show success alert
-          } else {
-            setStatus("error");
-            setMessage("Failed to Request!");
-            setShowAlert(true); // Show error alert
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          setStatus("error", error);
-          setMessage("Something went wrong!");
-          setShowAlert(true);
-        });
+      try {
+        console.log("Submitting:", newQuote);
+  
+        const response = await createQuote(newQuote);
+  
+        if (response && response.status === 201) {
+          // Reset form after successful submission
+          setNewQuote({
+            email: "",
+            phone: "",
+            destination: "",
+            startDate: "",
+            duration: "",
+          });
+  
+          setSuccessMessage(true);
+          setStatus("success");
+          setMessage("Requested Quote successfully!");
+        } else {
+          setStatus("error");
+          setMessage("Failed to Request!");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        setStatus("error");
+        setMessage("Something went wrong!");
+      } finally {
+        setShowAlert(true); // Always show alert after attempt
+      }
     } else {
       alert("Please fill all the fields correctly.");
     }
   };
+  
 
   // Check if the form is valid (no errors)
   const isFormValid = () => {

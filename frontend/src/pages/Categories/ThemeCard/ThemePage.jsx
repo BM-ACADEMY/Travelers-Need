@@ -15,7 +15,7 @@ const ThemePage = () => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsModalOpen(true);
@@ -33,7 +33,7 @@ const ThemePage = () => {
     const fetchThemeDetails = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/themes/themes/${encodeURIComponent(
+          `${BASE_URL}/themes/themes/${encodeURIComponent(
             themename
           )}`
         );
@@ -69,7 +69,7 @@ const ThemePage = () => {
   // Construct the URL
   const themeImageURL =
     themeName && fileName
-      ? `http://localhost:3000/api/themes/get-image?themeName=${encodeURIComponent(
+      ? `${BASE_URL}/themes/get-image?themeName=${encodeURIComponent(
           themeName
         )}&fileName=${encodeURIComponent(fileName)}`
       : "/path/to/default-image.jpg";

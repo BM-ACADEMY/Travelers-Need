@@ -40,7 +40,7 @@ const StatePage = () => {
 
     return () => clearTimeout(timeout); // Cleanup on unmount
   }, []);
-
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   const closeModal = () => setIsModalOpen(false);
 
   const handleFormSubmit = (formData) => {
@@ -66,7 +66,7 @@ const StatePage = () => {
         setStartPlace(fromValue);
 
         const response = await axios.get(
-          `http://localhost:3000/api/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
+          `${BASE_URL}/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
             stateName
           )}?from=${fromValue}&duration=${durationValue}`
         );
@@ -102,7 +102,7 @@ const StatePage = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search-by-state/${stateName}`
+          `${BASE_URL}/tour-plans/get-all-tour-plans-for-search-by-state/${stateName}`
         );
         const { startPlaces, destinations, durations } = response.data;
 
@@ -136,7 +136,7 @@ const StatePage = () => {
       console.log(days);
 
       const response = await axios.get(
-        `http://localhost:3000/api/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
+        `${BASE_URL}/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
           stateName
         )}?from=${startPlace}&duration=${days}`
       );
@@ -171,7 +171,7 @@ const StatePage = () => {
   } else {
     console.warn("Unexpected stateImage format:", stateImagePath);
   }
-  const stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+  const stateImageURL = `${BASE_URL}/address/get-image?state=${encodeURIComponent(
     stateQuery
   )}&fileName=${encodeURIComponent(fileName)}`;
 

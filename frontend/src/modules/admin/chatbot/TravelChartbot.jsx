@@ -4,6 +4,7 @@ import { faTimes } from "@fortawesome/free-solid-svg-icons"; // Close icon
 import ChatBot from "react-simple-chatbot";
 import axios from "axios"; // Import Axios
 import small from '../../../images/small.png';
+import {createQuote} from "../services/ApiService";
 
 const TravelChatbot = ({ onClose }) => {
   const [userData, setUserData] = useState({
@@ -132,7 +133,7 @@ const TravelChatbot = ({ onClose }) => {
       };
 
       try {
-        const response = await axios.post("http://localhost:3000/api/quotes/create-quote", requestData);
+        const response = await createQuote(requestData);
         console.log("Response Data:", response.data);
         setStepTriggered(true); // Prevent re-triggering of the step
       } catch (error) {

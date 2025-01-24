@@ -16,7 +16,13 @@ import {
 import axios from "axios";
 import TourPlansBookingTable from "./table/TourPlansBookingTable";
 import AlertMessage from "../../reusableComponents/AlertMessage";
-
+import {
+  updateBookingStatus,
+  createBooking,
+  fetchAllAddressesForPlaces,
+  fetchAllTourPlansForSearchByCity,
+  fetchAllBookingsForBooking,
+} from "../../services/ApiService";
 // import { set } from "mongoose";
 ChartJS.register(
   CategoryScale,
@@ -73,9 +79,7 @@ const Booking = () => {
   const fetchAllBookingData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        "http://localhost:3000/api/bookings/get-all-bookings-for-booking-page"
-      );
+      const response = await fetchAllBookingsForBooking();
       const data = response.data;
       if (data) {
         setLoading(false);
@@ -99,9 +103,7 @@ const Booking = () => {
       const city = event.target.value;
       setSelectedCity(city);
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:3000/api/tour-plans/get-all-tour-plans-for-search-by-city?cityName=${city}`
-      );
+      const response = await fetchAllTourPlansForSearchByCity(city);
       console.log(response);
 
       if (response && response.status === 200) {
@@ -140,12 +142,7 @@ const Booking = () => {
       setStatus("");
       setMessage("");
       setShowAlert(false);
-      const response = await axios.put(
-        `http://localhost:3000/api/bookings/update-booking/${bookingId}`,
-        {
-          status: newStatus,
-        }
-      );
+      const response = await updateBookingStatus(bookingId,newStatus);
       if (response && response.status === 201) {
         setLoading(false);
         fetchAllBookingData();
@@ -169,9 +166,7 @@ const Booking = () => {
   const handleCloseModal = () => setShowModal(false);
   useEffect(() => {
     const fetchAddressForFilter = async () => {
-      const response = await axios.get(
-        "http://localhost:3000/api/address/get-all-addresses-for-places"
-      );
+      const response = await fetchAllAddressesForPlaces()
       setCities(response.data.cities);
     };
     fetchAddressForFilter();
@@ -242,7 +237,7 @@ const Booking = () => {
           backgroundColor: "#ef156c",
           color: "white",
           fontSize: "15px",
-          fontWeight: "bold",  
+          fontWeight: "bold",
         }}
       >
         Loading...

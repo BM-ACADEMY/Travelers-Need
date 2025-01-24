@@ -6,7 +6,7 @@ import "leaflet-fullscreen/dist/leaflet.fullscreen.css";
 import "leaflet-fullscreen";
 import L from "leaflet";
 import "../components/MapComponent.css"; // Import your custom styles
-
+import {fetchMapData} from "../modules/admin/services/ApiService";
 // Fix Leaflet icon issue
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -64,15 +64,15 @@ const MapComponent = () => {
   const [locationDetails, setLocationDetails] = useState([]); // State for API data
   const [loading, setLoading] = useState(true);
   const centerPosition = [11.0168, 76.9558]; // Center of the map
-  const Baseurl=import.meta.env.VITE_BASE_URL;
-  const getApi=import.meta.env.VITE_MAP_DATA_ENDPOINT;
- const fullUrl = "http://localhost:3000/api/address/get-all-addresses";
+  // const Baseurl=import.meta.env.VITE_BASE_URL;
+  // const getApi=import.meta.env.VITE_MAP_DATA_ENDPOINT;
+//  const fullUrl = "http://localhost:3000/api/address/get-all-addresses";
   // Fetch data from the API using Axios
   useEffect(() => {
     const fetchData = async () => {
       try {
         
-        const response = await axios.get(fullUrl);
+        const response = await fetchMapData();
         const data = response.data.addresses;
 
         // Transform data to match locationDetails structure

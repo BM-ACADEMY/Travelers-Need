@@ -14,6 +14,14 @@ import Step3 from "./TourPlanStepper/Step3";
 import Step4 from "./TourPlanStepper/Step4";
 import TourPlansTable from "./table/TourPlansTable";
 import AlertMessage from "../../reusableComponents/AlertMessage";
+import {
+  fetchAllAddressForPlaces,
+  fetchAllThemesForTourPlans,
+  fetchAllCitesForTourPlans,
+  fetchSubCitiesByCityname,
+  createTourPlan,
+  updateTourPlan,
+} from "../../services/ApiService";
 const TourPackages = () => {
   const { setComponentName } = useComponentName();
   const [activeStep, setActiveStep] = useState(0);
@@ -64,9 +72,7 @@ const TourPackages = () => {
     const fetchAddresses = async () => {
       try {
         setLoading(true); // Start loading
-        const response = await axios.get(
-          "http://localhost:3000/api/address/get-all-addresses-for-places"
-        );
+        const response = await fetchAllAddressForPlaces();
         setAddressOptions(response.data.cities); // Assuming the data is an array of addresses
         setLoading(false); // Stop loading
       } catch (err) {
@@ -81,9 +87,7 @@ const TourPackages = () => {
   useEffect(() => {
     const fetchThemes = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/themes/get-all-themes"
-        );
+        const response = await fetchAllThemesForTourPlans();
         setThemesOptions(response.data.themes);
       } catch (error) {
         console.error("Error fetching themes:", error);
@@ -103,9 +107,7 @@ const TourPackages = () => {
     const fetchCities = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          "http://localhost:3000/api/places/get-all-cities"
-        );
+        const response = await fetchAllCitesForTourPlans();
         setCityOptions(response.data.data); // Assuming response structure
         setLoading(false);
       } catch (err) {
@@ -126,9 +128,7 @@ const TourPackages = () => {
     if (!cityName) console.log("cityname is empty");
     try {
       setLoading(true);
-      const response = await axios.get(
-        ` http://localhost:3000/api/places/get-sub-cities-by-cityName?cityName=${cityName}`
-      );
+      const response = await fetchSubCitiesByCityname(cityName);
       setLoading(false);
       // return Array.isArray(response.data.data) ? response.data.data : [];
       setSubCityOptions(response.data.data);
@@ -209,10 +209,7 @@ const TourPackages = () => {
       setMessage("");
       setShowAlert(false);
       console.log("Submitting Data: ", formDataPayload);
-      const response = await axios.post(
-        "http://localhost:3000/api/tour-plans/create-tour-plan",
-        formDataPayload
-      );
+      const response = await createTourPlan(formDataPayload);
       if (response && response.status === 201) {
         setSuccessMessage(true);
         setStatus("success");
@@ -350,15 +347,15 @@ const TourPackages = () => {
         if (typeof image === "string") {
           // Check if the URL is unchanged
           if (!initialData.images.includes(image)) {
-            console.log('same');
-            
+            console.log("same");
+
             const file = await urlToFile(image, "image.jpg"); // Convert URL to File
             formDataPayload.append("images", file);
           }
         } else if (image instanceof File) {
           // New image added by the user
-          console.log('new');
-          
+          console.log("new");
+
           formDataPayload.append("images", image);
         }
       }
@@ -370,10 +367,7 @@ const TourPackages = () => {
       setMessage("");
       setShowAlert(false);
       console.log("Submitting Data: ", formDataPayload);
-      const response = await axios.put(
-        `http://localhost:3000/api/tour-plans/update-tour-plan/${TourPlanId}`,
-        formDataPayload
-      );
+      const response = await updateTourPlan(TourPlanId, formDataPayload);
       if (response && response.status === 201) {
         setSuccessMessage(true);
         setStatus("success");

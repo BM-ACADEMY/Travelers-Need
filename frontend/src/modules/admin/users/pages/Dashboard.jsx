@@ -3,7 +3,7 @@ import { useComponentName } from "../../../../hooks/ComponentnameContext";
 import UpcomingTrips from "./UpcomingTrips";
 import { Line, Doughnut } from "react-chartjs-2";
 import axios from "axios";
-
+import {fetchAllBookingsForDashboard} from "../../services/ApiService";
 const formatDate = (dateString) => {
   const date = new Date(dateString);
   const month = date.toLocaleString("default", { month: "short" });
@@ -36,14 +36,13 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchAllBookingData();
+    
   }, []);
 
   const fetchAllBookingData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        "http://localhost:3000/api/bookings/get-all-bookings-for-booking-page"
-      );
+      const response = await fetchAllBookingsForDashboard()
       const data = response.data;
       if (data) {
         setLoading(false);

@@ -3,6 +3,7 @@ import { Modal, Tab, Tabs } from "react-bootstrap";
 import { useUser } from "../../../../../hooks/UserContext";
 import axios from "axios";
 import AlertMessage from "../../../reusableComponents/AlertMessage";
+import {createBooking} from "../../../services/ApiService";
 const BookingModal = ({ baseFare, packageId }) => {
   console.log(baseFare);
 
@@ -85,10 +86,7 @@ const BookingModal = ({ baseFare, packageId }) => {
       console.log(bookingData);
       setLoading(true);
       // Send POST request to the backend
-      const response = await axios.post(
-        "http://localhost:3000/api/bookings/create-booking",
-        bookingData
-      );
+      const response = await createBooking(bookingData);
       if (response && response.status === 201) {
         setLoading(false);
         setStatus("success");

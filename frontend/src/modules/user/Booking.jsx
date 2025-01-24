@@ -3,6 +3,7 @@ import { useComponentName } from "../../hooks/ComponentnameContext";
 import { Modal, Button, OverlayTrigger } from "react-bootstrap";
 import { useUser } from "../../hooks/UserContext";
 import AlertMessage from "../admin/reusableComponents/AlertMessage";
+import {updateBookingStatus,fetchAllBookingsByUserId} from "../admin/services/ApiService";
 import axios from "axios";
 const formatDate = (dateString) => {
   const date = new Date(dateString);
@@ -42,12 +43,8 @@ const Booking = () => {
       setStatus("");
       setMessage("");
       setShowAlert(false);
-      const response = await axios.put(
-        `http://localhost:3000/api/bookings/update-booking/${bookingId}`,
-        {
-          status: newStatus,
-        }
-      );
+      const response = await updateBookingStatus(bookingId,newStatus)
+      
       if (response && response.status === 201) {
         setLoading(false);
         fetchAllBookingData();
@@ -71,9 +68,7 @@ const Booking = () => {
   const fetchAllBookingData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:3000/api/bookings/get-all-booking-by-userId/${user.userId}`
-      );
+      const response = await fetchAllBookingsByUserId(user.userId);
       const data = response.data;
       if (data) {
         setLoading(false);

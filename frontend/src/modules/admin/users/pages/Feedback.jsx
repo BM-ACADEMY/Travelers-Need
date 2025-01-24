@@ -21,6 +21,7 @@ import {
   Legend,
 } from "chart.js";
 import moment from "moment";
+import {fetchAllReviewsForAdmin} from "../../services/ApiService";
 
 // Register chart.js components
 ChartJS.register(
@@ -54,16 +55,7 @@ const Feedback = () => {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        `http://localhost:3000/api/reviews/get-all-reviews-for-admin-page`,
-        {
-          params: {
-            page: currentPage,
-            limit: 10,
-            filter: filter,
-          },
-        }
-      );
+      const response = await fetchAllReviewsForAdmin(currentPage, 10, filter);
 
       const data = response.data;
 

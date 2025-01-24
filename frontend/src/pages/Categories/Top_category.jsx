@@ -5,7 +5,7 @@ const Top_category = ({ topDestinationsData }) => {
   if (!topDestinationsData || !Array.isArray(topDestinationsData)|| topDestinationsData.length === 0) {
     return <div className="text-center">No Top Destinations Available</div>;
   }
-
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     console.log("Top Destinations Data:", topDestinationsData);
   }, [topDestinationsData]);
@@ -27,7 +27,7 @@ const Top_category = ({ topDestinationsData }) => {
           const firstTourPlan = tourPlans[0]?.title || 'No Packages Available';
           const tourPlanCount = tourPlans.length || 0;
 
-          const stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+          const stateImageURL = `${BASE_URL}/address/get-image?state=${encodeURIComponent(
             stateName
           )}&fileName=${encodeURIComponent(imageName)}`;
 

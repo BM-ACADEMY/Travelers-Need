@@ -5,7 +5,7 @@ const Hillstations_category = ({hillStationsData}) => {
     if (!hillStationsData || Object.keys(hillStationsData).length === 0) {
         return <p className="text-center">No Hill Station Destinations Available</p>;
       }
-    
+      var BASE_URL = import.meta.env.VITE_BASE_URL;
       return (
         <div className="container mt-5">
           <h4 className=" mb-4" style={{color :'rgba(40,41,65,1)'}}>HILL STATION DESTINATIONS</h4>
@@ -30,7 +30,7 @@ const Hillstations_category = ({hillStationsData}) => {
               }
     
               // Construct the stateImage URL dynamically
-              const stateImageURL = `http://localhost:3000/api/address/image?stateName=${encodeURIComponent(
+              const stateImageURL = `${BASE_URL}/address/image?stateName=${encodeURIComponent(
                 stateName
               )}&fileName=${encodeURIComponent(fileName)}`;
     

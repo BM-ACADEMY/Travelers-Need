@@ -4,7 +4,7 @@ import { Doughnut } from "react-chartjs-2";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { useComponentName } from "../../hooks/ComponentnameContext";
 import { useUser } from "../../hooks/UserContext";
-
+import {fetchAllBookingsByUserIdForDashboard} from "../admin/services/ApiService";
 const Dashboard = ({ userId }) => {
   const { setComponentName } = useComponentName();
   const { user, logout } = useUser();
@@ -30,6 +30,7 @@ const Dashboard = ({ userId }) => {
       const { data } = await axios.get(
         `http://localhost:3000/api/bookings/get-all-booking-by-userId-for-dashboard/${user.userId}?page=${page}&limit=${limit}`
       );
+      fetchAllBookingsByUserIdForDashboard(user.userId,page,limit)
       if (data) {
         setLoading(false);
       }

@@ -7,6 +7,8 @@ const Beach_category = ({ beachData }) => {
         return <p className="text-center">No Beach Destinations Available</p>;
     }
 
+    var BASE_URL = import.meta.env.VITE_BASE_URL;
+   
     useEffect(() => {
         console.log(beachData);
     }, [beachData]);
@@ -28,7 +30,7 @@ const Beach_category = ({ beachData }) => {
                         const fileName = parts.pop(); // Get the file name
                         const stateCode = parts.length > 0 ? parts[0] : 'Unknown'; // Get the state code
 
-                        stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+                        stateImageURL = `${BASE_URL}/address/get-image?state=${encodeURIComponent(
                             stateCode
                         )}&fileName=${encodeURIComponent(fileName)}`;
                     }

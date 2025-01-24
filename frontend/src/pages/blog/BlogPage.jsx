@@ -4,31 +4,44 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarAlt, faUser } from "@fortawesome/free-solid-svg-icons";
 import "./BlogPage.css";
+import {fetchBlogByTitle} from "../../modules/admin/services/ApiService";
+
 // Helper function to generate image URL
-const generateImageUrl = (imagePath) => {
-  if (!imagePath) return "placeholder.jpg";
-  const parts = imagePath.split("\\");
-  const title = parts[0]?.toLowerCase() || "";
-  const fileName = parts[1] || "";
-  return `http://localhost:3000/api/blogs/get-image?title=${encodeURIComponent(
-    title
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
+// const generateImageUrl = (imagePath) => {
+//   if (!imagePath) return "placeholder.jpg";
+//   const parts = imagePath.split("\\");
+//   const title = parts[0]?.toLowerCase() || "";
+//   const fileName = parts[1] || "";
+//   return `http://localhost:3000/api/blogs/get-image?title=${encodeURIComponent(
+//     title
+//   )}&fileName=${encodeURIComponent(fileName)}`;
+// };
 
 const BlogPage = () => {
   const { title } = useParams(); // Get the blog title from the route
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(false); // Initialize loading state as false
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const GET_IMAGE_FOR_BLOG_URL = import.meta.env.VITE_GET_IMAGE_FOR_BLOG.startsWith(
+    "http"
+  )
+    ? import.meta.env.VITE_GET_IMAGE_FOR_BLOG
+    : `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_BLOG}`;
 
+  const generateImageUrl = (imagePath) => {
+    if (!imagePath) return "placeholder.jpg";
+    const parts = imagePath.split("\\");
+    const title = parts[0]?.toLowerCase() || "";
+    const fileName = parts[1] || "";
+    return `${GET_IMAGE_FOR_BLOG_URL}?title=${encodeURIComponent(
+      title
+    )}&fileName=${encodeURIComponent(fileName)}`;
+  };
   useEffect(() => {
     const fetchBlog = async () => {
       setLoading(true); // Set loading to true before making the API call
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/blogs/get-blog-title/${encodeURIComponent(
-            title
-          )}`
-        );
+        const response = await fetchBlogByTitle(title)
 
         if (response.data && response.data.blog) {
           setBlog(response.data.blog); // Update state with the received blog

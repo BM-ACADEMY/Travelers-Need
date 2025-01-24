@@ -4,7 +4,13 @@ import axios from "axios";
 import moment from "moment";
 import { useComponentName } from "../../../../hooks/ComponentnameContext";
 import AlertMessage from "../../reusableComponents/AlertMessage";
-
+import {
+  deleteQuote,
+  updateQuoteStatus,
+  updateQuote,
+  createQuote,
+  fetchAllQuotesForAdminPage,
+} from "../../services/ApiService";
 
 const formatDuration = (duration) => {
   const days = duration;
@@ -43,15 +49,10 @@ const Support = () => {
   const fetchQuotes = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        "http://localhost:3000/api/quotes/get-all-quotes-for-admin-page",
-        {
-          params: {
-            page: currentPage,
-            searchTerm,
-            filter,
-          },
-        }
+      const response = await fetchAllQuotesForAdminPage(
+        currentPage,
+        searchTerm,
+        filter
       );
       setQuotes(response.data.quotes);
       setTotalPages(response.data.totalPages);
@@ -98,10 +99,7 @@ const Support = () => {
     try {
       setLoading(true);
 
-      const response = await axios.post(
-        "http://localhost:3000/api/quotes/create-quote",
-        newQuote
-      );
+      const response = await createQuote(newQuote);
       if (response && response.status === 201) {
         fetchQuotes();
         setLoading(false);
@@ -144,9 +142,7 @@ const Support = () => {
     if (selectedQuote) {
       try {
         setLoading(true);
-        const response = await axios.delete(
-          `http://localhost:3000/api/quotes/delete-quote/${selectedQuote._id}`
-        );
+        const response = await deleteQuote(selectedQuote._id);
         if (response && response.status === 201) {
           setLoading(false);
           setStatus("success");
@@ -184,10 +180,7 @@ const Support = () => {
 
     try {
       setLoading(true);
-      const response = await axios.put(
-        `http://localhost:3000/api/quotes/update-quote/${selectedQuote._id}`,
-        selectedQuote
-      );
+      const response = await updateQuote(selectedQuote._id, selectedQuote);
       if (response && response.status === 201) {
         setLoading(false);
         fetchQuotes();
@@ -219,10 +212,8 @@ const Support = () => {
     setShowAlert(false);
     try {
       setLoading(true);
-      await axios.patch(
-        `http://localhost:3000/api/quotes/update-quote-status/${quoteId}`,
-        { status: newStatus }
-      );
+     const response= await updateQuoteStatus(quoteId, {status:newStatus});
+
       if (response && response.status === 201) {
         setLoading(false);
         fetchQuotes();

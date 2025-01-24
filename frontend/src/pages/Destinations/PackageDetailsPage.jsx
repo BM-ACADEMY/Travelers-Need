@@ -26,22 +26,6 @@ import ReusableModal from "../model/ReusableModel";
 import QuoteForm from "../model/QuoteForm";
 
 
-const constructImageURL = (imagePath) => {
-  const parts = imagePath?.split("\\");
-  let placeName = "";
-  let fileName = "";
-
-  if (parts?.length >= 2) {
-    placeName = parts[0];
-    fileName = parts[1];
-  } else {
-    console.warn("Unexpected image path format:", imagePath);
-  }
-
-  return `http://localhost:3000/api/places/get-image?placeName=${encodeURIComponent(
-    placeName
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
 
 const PackageDetailsPage = () => {
   const { stateName, cityName } = useParams();
@@ -59,6 +43,24 @@ const PackageDetailsPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigator = useNavigate();
 
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
+  const constructImageURL = (imagePath) => {
+    const parts = imagePath?.split("\\");
+    let placeName = "";
+    let fileName = "";
+  
+    if (parts?.length >= 2) {
+      placeName = parts[0];
+      fileName = parts[1];
+    } else {
+      console.warn("Unexpected image path format:", imagePath);
+    }
+  
+    return `${BASE_URL}/places/get-image?placeName=${encodeURIComponent(
+      placeName
+    )}&fileName=${encodeURIComponent(fileName)}`;
+  };
+  
   useEffect(() => {
     const timeout = setTimeout(() => {
       setIsModalOpen(true);
@@ -95,7 +97,7 @@ const PackageDetailsPage = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/places/details?stateName=${stateName}&cityName=${cityName}`
+          `${BASE_URL}/places/details?stateName=${stateName}&cityName=${cityName}`
         );
         const fetchedPlaceDetails = response.data?.data || null;
         setPlaceDetails(fetchedPlaceDetails);
@@ -121,7 +123,7 @@ const PackageDetailsPage = () => {
   const fetchStateData = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:3000/api/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
+        `${BASE_URL}/tour-plans/tour-plans/tour-packages/${encodeURIComponent(
           stateName
         )}`
       );

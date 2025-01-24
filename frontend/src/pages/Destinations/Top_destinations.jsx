@@ -6,22 +6,6 @@ import ReusableModal from "../model/ReusableModel";
 import QuoteForm from "../model/QuoteForm";
 
 // Helper function to construct image URL
-const constructImageURL = (imagePath) => {
-  const parts = imagePath?.split("\\");
-  let placeName = "";
-  let fileName = "";
-
-  if (parts?.length >= 2) {
-    placeName = parts[0];
-    fileName = parts[1];
-  } else {
-    console.warn("Unexpected image path format:", imagePath);
-  }
-
-  return `http://localhost:3000/api/places/get-image?placeName=${encodeURIComponent(
-    placeName
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
 
 const Top_destinations = () => {
   const [statePopularCities, setStatePopularCities] = useState([]);
@@ -30,12 +14,29 @@ const Top_destinations = () => {
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
+  const constructImageURL = (imagePath) => {
+    const parts = imagePath?.split("\\");
+    let placeName = "";
+    let fileName = "";
+  
+    if (parts?.length >= 2) {
+      placeName = parts[0];
+      fileName = parts[1];
+    } else {
+      console.warn("Unexpected image path format:", imagePath);
+    }
+  
+    return `${BASE_URL}/places/get-image?placeName=${encodeURIComponent(
+      placeName
+    )}&fileName=${encodeURIComponent(fileName)}`;
+  };
+  
  useEffect(() => {
     const fetchDestinations = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/places/get-all-popular-place"
+          `${BASE_URL}/places/get-all-popular-place`
         );
 
         const { statePopularCities, countryPopularCities } = response.data;

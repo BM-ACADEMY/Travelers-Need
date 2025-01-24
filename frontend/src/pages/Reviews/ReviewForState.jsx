@@ -10,12 +10,13 @@ const ReviewForState = ({ stateName }) => {
   const [loading, setLoading] = useState(false); // Tracks loading state
   const hasFetchedOnce = useRef(false); // Prevents double fetching during initial load
   const navigate=useNavigate();
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   // Function to fetch reviews from the server
   const fetchReviews = async (page) => {
     try {
       setLoading(true); // Set loading to true during API call
       const response = await axios.get(
-        `http://localhost:3000/api/tour-plans/get-all-tour-plan-reviews-by-state/${stateName}?page=${page}&limit=5`
+        `${BASE_URL}/tour-plans/get-all-tour-plan-reviews-by-state/${stateName}?page=${page}&limit=5`
       );
       const { reviews: newReviews, pagination } = response.data;
 

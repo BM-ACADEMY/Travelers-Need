@@ -6,6 +6,7 @@ const Wildlife_category = ({ wildlifeData }) => {
     if (!wildlifeData || !Array.isArray(wildlifeData) || wildlifeData.length === 0) {
         return <div className="text-center">No Wildlife Destinations Available</div>;
     }
+    var BASE_URL = import.meta.env.VITE_BASE_URL;
 
     useEffect(() => {
         console.log('Wildlife Data:', wildlifeData);
@@ -30,7 +31,7 @@ const Wildlife_category = ({ wildlifeData }) => {
                         const parts = image.split('\\'); // Split the path by backslashes
                         const fileName = parts.pop(); // Get the file name
                         const stateCode = parts.join('\\'); // Ensure correct state extraction
-                        stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+                        stateImageURL = `${BASE_URL}/address/get-image?state=${encodeURIComponent(
                             stateCode
                         )}&fileName=${encodeURIComponent(fileName)}`;
                     }

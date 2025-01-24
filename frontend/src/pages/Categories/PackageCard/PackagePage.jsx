@@ -21,6 +21,7 @@ import Sign_in from "../../Sign_in";
 import Sign_up from "../../Sign_up";
 import qrcode from "../../../assets/qrcode.png.png";
 import { Swiper, SwiperSlide } from "swiper/react";
+import {fetchTourPlanByTourId,createBooking,createPayment} from "../../../modules/admin/services/ApiService";
 
 // Import Swiper styles
 import "swiper/css";
@@ -102,10 +103,7 @@ const PackagePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/tour-plans/tour-plans/tour-code/${upperCaseTourCode}`
-        );
-
+        const response = await fetchTourPlanByTourId(upperCaseTourCode);
         setPackageDetails(response.data.tourPlan); // Assuming the response contains `tourPlan` key
         setReviews(response.data.tourPlan.reviews || []); // Assuming reviews are part of the `tourPlan` object
         console.log(response.data.tourPlan.reviews, "rev");
@@ -222,10 +220,7 @@ const PackagePage = () => {
     console.log(bookingData, "booking");
 
     try {
-      const response = await axios.post(
-        "http://localhost:3000/api/bookings/create-booking",
-        bookingData
-      );
+      const response = await createBooking(bookingData);
       console.log("Booking successful:", response.data.booking);
       setPackagePrice(response.data.booking.price);
       setOrderId(response.data.booking.orderId);
@@ -249,10 +244,7 @@ const PackagePage = () => {
       };
       console.log(paymentData);
 
-      const response = await axios.post(
-        "http://localhost:3000/api/payments/create-payment",
-        paymentData
-      );
+      const response = await createPayment(paymentData);
       alert("Payment Successful! Payment ID: " + response.data.paymentId);
       setPaymentCompleted(true);
     } catch (error) {
@@ -290,15 +282,21 @@ const PackagePage = () => {
     addressId,
     images,
   } = packageDetails;
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const VITE_GET_IMAGE_FOR_TOUR_PLAN = import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN.startsWith(
+    "http"
+  )
+    ? import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN
+    : `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN}`;
   const packageImageURLs = images.map((imagePath) => {
     const parts = imagePath.split("\\"); // Split the image path
     const tourCode = parts[0] || "";
     const fileName = parts[1] || "";
 
     // Generate and return the image URL for each image
-    return `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
-      tourCode
-    )}&fileName=${encodeURIComponent(fileName)}`;
+    return `${VITE_GET_IMAGE_FOR_TOUR_PLAN}?tourCode=${encodeURIComponent(
+      tourCode?.toLowerCase() || ""
+    )}&fileName=${encodeURIComponent(fileName || "")}`;
   });
 
   // Example usage: packageImageURLs now contains an array of image URLs

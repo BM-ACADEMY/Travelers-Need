@@ -6,7 +6,7 @@ const Heritage_category = ({ heritageData }) => {
     if (!heritageData || !Array.isArray(heritageData) || heritageData.length === 0) {
         return <p className="text-center">No Heritage Destinations Available</p>;
     }
-
+    var BASE_URL = import.meta.env.VITE_BASE_URL;
     useEffect(() => {
         console.log(heritageData);
     }, [heritageData]);
@@ -28,7 +28,7 @@ const Heritage_category = ({ heritageData }) => {
                         const fileName = parts.pop(); // Get the file name
                         const stateCode = parts.length > 0 ? parts[0] : 'Unknown'; // Get the state code
 
-                        stateImageURL = `http://localhost:3000/api/address/get-image?state=${encodeURIComponent(
+                        stateImageURL = `${BASE_URL}/address/get-image?state=${encodeURIComponent(
                             stateCode
                         )}&fileName=${encodeURIComponent(fileName)}`;
                     }

@@ -5,7 +5,7 @@ const Trending_category = ({ trendingData }) => {
   if (!trendingData || Object.keys(trendingData).length === 0) {
     return <div className="text-center">No Trending Destinations Available</div>;
   }
-
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   return (
     <div className="container mt-5">
       <h4 className=" mb-4" style={{color :'rgba(40,41,65,1)'}}>TRENDING DESTINATIONS</h4>
@@ -23,7 +23,7 @@ const Trending_category = ({ trendingData }) => {
           // Construct the stateImage URL dynamically
           console.log(fileName,stateName);
           
-          const stateImageURL = `http://localhost:3000/api/address/image?stateName=${encodeURIComponent(
+          const stateImageURL = `${BASE_URL}/address/image?stateName=${encodeURIComponent(
             stateName
           )}&fileName=${encodeURIComponent(fileName)}`;
 

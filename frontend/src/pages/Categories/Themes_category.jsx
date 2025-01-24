@@ -17,7 +17,7 @@ const Themes_category = ({ themesData }) => {
       </div>
     );
   }
-
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     console.log(themesData);
   }, [themesData]);

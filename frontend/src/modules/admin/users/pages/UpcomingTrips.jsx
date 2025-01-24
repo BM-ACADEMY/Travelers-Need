@@ -11,16 +11,17 @@ import {
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import axios from "axios"; // You'll use axios to make the API call
+import{fetchAllBookingsForUpcomingTrips} from "../../services/ApiService";
 
-const generateImageUrl = (imagePath) => {
-  if (!imagePath) return "placeholder.jpg";
-  const parts = imagePath.split("\\");
-  const tourCode = parts[0]?.toLowerCase() || "";
-  const fileName = parts[1] || "";
-  return `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
-    tourCode
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
+// const generateImageUrl = (imagePath) => {
+//   if (!imagePath) return "placeholder.jpg";
+//   const parts = imagePath.split("\\");
+//   const tourCode = parts[0]?.toLowerCase() || "";
+//   const fileName = parts[1] || "";
+//   return `http://localhost:3000/api/tour-plans/get-tour-plan-image?tourCode=${encodeURIComponent(
+//     tourCode
+//   )}&fileName=${encodeURIComponent(fileName)}`;
+// };
 
 const formatDate = (date) => {
   // Format the date using JavaScript's Date object and toLocaleDateString
@@ -32,15 +33,30 @@ const CalendarTrips = () => {
   const [filteredTrips, setFilteredTrips] = useState([]);
   const [loading, setLoading] = useState(false);
 
+
+  const BASE_URL = import.meta.env.VITE_BASE_URL;
+  const VITE_GET_IMAGE_FOR_TOUR_PLAN = import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN.startsWith(
+    "http"
+  )
+    ? import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN
+    : `${BASE_URL}${import.meta.env.VITE_GET_IMAGE_FOR_TOUR_PLAN}`;
+
+  const generateImageUrl = (imagePath) => {
+    if (!imagePath) return "placeholder.jpg";
+
+    const [tourCode, fileName] = imagePath.split("\\");
+
+    return `${VITE_GET_IMAGE_FOR_TOUR_PLAN}?tourCode=${encodeURIComponent(
+      tourCode?.toLowerCase() || ""
+    )}&fileName=${encodeURIComponent(fileName || "")}`;
+  };
   // Fetch trips based on the current month
   const fetchTrips = async () => {
     try {
       setLoading(true);
 
       // Call your API here with the filters
-      const response = await axios.get(
-        "http://localhost:3000/api/bookings/get-all-bookings-for-upcoming-trips"
-      );
+      const response = await fetchAllBookingsForUpcomingTrips();
 
       setFilteredTrips(response.data.bookings); // Assuming 'bookings' is returned from your API
       setLoading(false);

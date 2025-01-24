@@ -1,31 +1,33 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./PlaceCard.css";
 import { useNavigate } from "react-router-dom";
-const constructImageURL = (imagePath) => {
-  if (!imagePath) {
-    console.warn("Image path is not provided.");
-    return "";
-  }
 
-  // Normalize the path separators for cross-platform compatibility
-  const normalizedPath = imagePath.replace(/\\/g, "/");
-  const parts = normalizedPath.split("/");
-
-  let placeName = parts[0] || ""; // Extract the folder name as placeName
-  let fileName = parts[1] || ""; // Extract the file name
-
-  // Construct the URL
-  return `http://localhost:3000/api/places/get-image?placeName=${encodeURIComponent(
-    placeName
-  )}&fileName=${encodeURIComponent(fileName)}`;
-};
 
 const PlaceCard = ({ place, index, totalCount, onViewDetails }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
   const descriptionRef = useRef(null);
   const navigate = useNavigate();
+  var BASE_URL = import.meta.env.VITE_BASE_URL;
 
+  const constructImageURL = (imagePath) => {
+    if (!imagePath) {
+      console.warn("Image path is not provided.");
+      return "";
+    }
+  
+    // Normalize the path separators for cross-platform compatibility
+    const normalizedPath = imagePath.replace(/\\/g, "/");
+    const parts = normalizedPath.split("/");
+  
+    let placeName = parts[0] || ""; // Extract the folder name as placeName
+    let fileName = parts[1] || ""; // Extract the file name
+  
+    // Construct the URL
+    return `${BASE_URL}/places/get-image?placeName=${encodeURIComponent(
+      placeName
+    )}&fileName=${encodeURIComponent(fileName)}`;
+  };
   useEffect(() => {
     if (descriptionRef.current) {
       const lineHeight = parseFloat(

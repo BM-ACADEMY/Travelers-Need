@@ -2,7 +2,7 @@ import React, { useReducer, useState } from "react";
 import AddressTable from "./table/AddressTable";
 import AddressDemo from "./AddressDemo";
 import axios from "axios";
-
+import {deleteAddress,updateAddress,createAddress} from "../../services/ApiService";
 // Action types
 const SET_FIELD_VALUE = "SET_FIELD_VALUE";
 
@@ -78,17 +78,9 @@ const Address = () => {
     try {
       let response;
       if (state.addressId) {
-        response = await axios.put(
-          `http://localhost:3000/api/address/update-address/${state.addressId}`,
-          finalFormData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
+        response = await updateAddress(state.addressId,finalFormData);
       } else {
-        response = await axios.post(
-          "http://localhost:3000/api/address/create-address",
-          finalFormData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
+        response = await createAddress(finalFormData);
       }
       console.log("Form submitted successfully:", response.data);
     } catch (error) {
@@ -143,10 +135,7 @@ const Address = () => {
       console.log("Deleting address with ID:", addressId);
   
       // Call the delete API to remove the address
-      const response = await axios.delete(
-        `http://localhost:3000/api/address/delete-address/${addressId.id}`
-      );
-  
+      const response = await deleteAddress(addressId.id);
       // Handle successful deletion
       console.log("Address deleted successfully:", response.data);
   
