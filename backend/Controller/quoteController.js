@@ -1,4 +1,5 @@
-const Quote = require("../Models/QuoteModel");
+const quoteModel = require('../Models/quoteModel');
+
 const moment = require("moment");
 
 // Create a new quote
@@ -12,7 +13,7 @@ exports.createQuote = async (req, res) => {
     }
 
     // Create and save the quote
-    const newQuote = new Quote({
+    const newQuote = new quoteModel({
       email,
       phone,
       destination,
@@ -35,7 +36,7 @@ exports.createQuote = async (req, res) => {
 // Fetch all quotes
 exports.getAllQuotes = async (req, res) => {
   try {
-    const quotes = await quoteModelte.find();
+    const quotes = await quoteModel.find();
     res.status(200).json(quotes);
   } catch (error) {
     res
@@ -82,8 +83,8 @@ exports.getAllQuotesForAdminPage = async (req, res) => {
     }
 
     // Fetch records with pagination
-    const quotes = await Quote.find(query).skip(skip).limit(parseInt(limit));
-    const totalQuotes = await Quote.countDocuments(query);
+    const quotes = await quoteModel.find(query).skip(skip).limit(parseInt(limit));
+    const totalQuotes = await quoteModel.countDocuments(query);
     const totalPages = Math.ceil(totalQuotes / limit);
 
     res.status(201).json({
@@ -112,7 +113,7 @@ exports.updateQuoteStatus = async (req, res) => {
     }
 
     // Find and update the quote's status
-    const updatedQuote = await Quote.findByIdAndUpdate(
+    const updatedQuote = await quoteModel.findByIdAndUpdate(
       id,
       { status },
       { new: true } // Return the updated document
@@ -149,7 +150,7 @@ exports.updateQuote = async (req, res) => {
     }
 
     // Update the quote (excluding status)
-    const updatedQuote = await Quote.findByIdAndUpdate(
+    const updatedQuote = await quoteModel.findByIdAndUpdate(
       id,
       { email, phone, destination, startDate, duration },
       { new: true } // Return the updated document
@@ -176,7 +177,7 @@ exports.getQuoteById = async (req, res) => {
     const { id } = req.params;
 
     // Find the quote by ID
-    const quote = await Quote.findById(id);
+    const quote = await quoteModel.findById(id);
 
     if (!quote) {
       return res.status(404).json({ message: "Quote not found." });
@@ -196,7 +197,7 @@ exports.deleteQuote = async (req, res) => {
     const { id } = req.params;
 
     // Find and delete the quote
-    const deletedQuote = await Quote.findByIdAndDelete(id);
+    const deletedQuote = await quoteModel.findByIdAndDelete(id);
 
     if (!deletedQuote) {
       return res.status(404).json({ message: "Quote not found." });
