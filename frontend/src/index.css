@@ -91,7 +91,7 @@
   .scrollable-main {
     overflow-y: auto; /* Enable vertical scrolling */
     overflow-x: hidden; /* Prevent horizontal scrolling */
-    max-height: calc(100vh -20px - 10px); 
+    max-height: calc(100vh - 30px) !important;
     padding: 1rem; /* Optional padding for better content spacing */
   }
   

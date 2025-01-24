@@ -30,7 +30,7 @@ import TermsAndConditions from "./pages/staticPages/TermsAndConditions";
 import BlogList from "./pages/blog/BlogList";
 import BlogPage from "./pages/blog/BlogPage";
 import UserModule from "./modules/user/UserModule";
-import UserRoute from "./guard/userRoute";
+import UserRoute from "./guard/UserRoute";
 import NotFound from "./pages/NotFound";
 import Not_Found from "./pages/Not_Found";
 
